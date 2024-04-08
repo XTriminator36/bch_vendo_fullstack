@@ -1,0 +1,239 @@
+<!-- load static files -->
+{% load static %} 
+<!DOCTYPE html>
+<html>
+    <head>
+        <Title>Admin Dashboard</Title>
+         <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Add static files here... -->
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'css/auth_dashboard_styles.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+
+    <!-- Bootstrap Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>    
+
+    <script src="{% static 'js/animate.js' %}"></script>
+    <script src="{% static 'js/forms.js' %}"></script>
+
+    </head>
+
+<body>
+
+    {% block mynav %}
+        <nav class="navbar-expand-custom navbar-mainbg">
+
+            <a class="navbar-brand navbar-logo" href="#">Paytaca Vendo Logo</a>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+                <ul class="navbar-nav ml-auto">
+                    <div class="hori-selector"><div class="left"></div><div class="right"></div></div>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="javascript:void(0);"><i class=""></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0);"><i class=""></i>Inventories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0);"><i class=""></i>Vendo Machines</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0);"><i class=""></i>Sales Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0);"><i class=""></i>Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0);"><i class=""></i>Notifications</a>
+                    </li>
+                </ul>
+            </div>
+            
+        </nav>
+    {% endblock %}
+
+    {% block content %}
+
+        <h4 class="text-center text-info">This is the dashboard page</h4>
+
+        {% comment %} Start of Adding Vendo Product Items {% endcomment %}
+
+        <div class="container-fluid jumbotron">
+            <h4 class="text-center">Create a Vendo Product</h4>
+            <div class="col mt-5">
+                        {% if messages %}
+                            <div class="col">
+                                <div class="lg-3">
+                                    <div class="card text-center bg-success text-white">
+                                        <div class="card-body container">
+                                            <h5 class="card-title">Action Info:</h5>
+                                                {% for message in messages %}
+                                                    <p class="card-text">{{ message }}</p>
+                                                {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                </div> 
+
+        <form method="POST" action="{% url 'addProduct' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="d-flex">
+
+            <div class="col">
+                <div class="mb-3">
+                    <label class="form-label">For BCH Vendo</label>
+                    <select class="form-control text-center" name="bch_vendo" id="bch_vendo">
+                        <option value="">Select a Vendo</option>
+                        {% for vendo in bch_vendo %}
+                            <option value="{{ vendo.bch_vendo_name }}">{{ vendo.bch_vendo_name }}</option>
+                        {% endfor %}
+                    </select>
+            
+                        <div class="text-center">
+                            <small class="text-muted">Choose any of the available vendo machines</small>
+                        </div>  
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="mb-3">
+                    <label class="form-label">Product Count</label>
+                    <input type="number" name="products_count" id="products_count" class="form-control" placeholder="Enter Product Count" min="0" Required/>
+                    <small class="text-muted">Input number of Products that will have for the particular Vendo Machine</small>
+                </div>
+            </div>
+
+            </div>
+
+            {% if products_count == "0" %}
+            <div class="text-center heading">   
+                    <h5>Vendo Machine Item Details</h5>
+            </div>
+            {% endif %}
+
+        <div id="product_items">    </div>
+
+
+            <div class="d-flex text-center">
+                <div class="col">
+                    <div class="lg-3 container">
+                        <input type="submit" name="create_product_item" id="create_product_item" value="Create Product" class="btn btn-primary form-control mt-5" Required/>         
+                        
+                        {% if messages %}
+                        <div class="col mt-3">
+                            <div class="lg-3">
+                                <div class="card bg-danger text-white">
+                                  <div class="card-body">
+                                    <h5 class="card-title">Error Message</h5>
+                                        {% for message in messages %}
+                                            <p class="card-text">{{ message }}</p>
+                                        {% endfor %}
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+
+            </div>
+
+        </div>
+        </form>
+
+        {% comment %} End of Adding Vendo Product Items {% endcomment %}
+
+        {% comment %} Start of Creating Vendo Machine IDs {% endcomment %}
+
+        <form action="{% url 'registerVendo' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="container-fluid jumbotron">
+
+                <h4 class="text-center header">
+                    Vendo Machine Registration
+                    <br>
+                    <small class="text-muted">
+                            Register Deployed Vendo Machines here.
+                    </small>
+                </h4>
+
+                <div class="d-flex mt-5">
+
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="" class="form-label">Raspberry Pi Model</label>
+                            <select class="form-control" name="pi_model" id="pi_model" Required>
+                                <option selected value="">Choose Model</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="" class="form-label">Input Serial Number</label>
+                            <input type="text" name="serial_number" id="serial_number" class="form-control" placeholder="#0000-0000" Required/>
+                            <small class="text-muted">Put the raspberry pi's serial</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="" class="form-label">BCH Wallet Address</label>
+                            <input type="text" name="bch_wallet_address" id="bch_wallet_address" class="form-control" placeholder="Wallet Address" Required/>
+                            <small class="text-muted">Put the Vendo's wallet address</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="" class="form-label">Name BCH Vendo</label>
+                            <div class="row">
+                            <input type="text" name="bch_vendo_name" id="bch_vendo_name" class="form-control col-sm-2" value="BCH - " readonly/>
+                            <input type="text" name="bch_vendo_name" id="bch_vendo_name" class="form-control col-sm-10 right" Required/>
+                            </div>
+                            <small class="text-muted">Name for your BCH Vendo</small>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="d-flex mt-5">
+                    <div class="col">
+                        <div class="lg-3 container">
+                            <input type="submit" name="register_vendo" id="register_vendo" class="btn btn-success form-control" value="Register BCH Vendo / Cash-in Vendo">
+                        </div>
+                    </div>
+                </div>
+
+            </div>        
+        </form>
+
+        {% comment %} End of Creating Vendo Machine IDs {% endcomment %}
+
+    {% endblock %}
+
+    {% comment %} 
+     - Will Automatically logout after idling for 3 hours
+     - This applies to all sites connected included
+    {% endcomment %}
+
+    {{ redirect_to_login_immediately }}
+
+</body>
+</html>

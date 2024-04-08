@@ -1,0 +1,5 @@
+python_version = "3.12"
+django-auto-logout
+psycopg2
+celery
+pillow
