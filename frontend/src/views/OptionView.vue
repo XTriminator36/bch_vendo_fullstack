@@ -3,6 +3,14 @@ import { ref } from 'vue';
 // import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 // import BaseModal from "../components/BaseModal.vue";
 import CameraScan from "../components/CameraScan.vue";
+import {gsap} from 'gsap'
+import { onMounted } from 'vue'
+
+onMounted(async () => {
+    var tween = gsap.from(".thecontainer", {  x: -100, duration: 1, ease: "elastic.out"})
+    tween.play()
+    // tween.reverse()
+  });
 
 const modal = ref(null)
 const openModal = () => {
@@ -14,7 +22,7 @@ const openModal = () => {
   <div class="container absolute h-dvh m-0 background1 max-w-4xl bg-stone-100">
     <!-- <BackgroundDesignVu e class="h-100" /> -->
     <div class="wholeHolder flex flex-col h-dvh">
-        <div class="relative h-100 mx-6 my-auto rounded-3xl bg-teal-100/50 shadow-sm">
+        <div class="thecontainer relative h-100 mx-6 my-auto rounded-3xl bg-teal-100/50 shadow-sm">
             <div class="headTag">
                 <div class=" w-full bg-[#151515] rounded-t-3xl absolute p-6 pb-9 ">
                     <p class="text-white font-dela text-8xl">Choose your option:</p>    

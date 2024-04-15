@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { inject } from 'vue'
 
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
-import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from 'vue-qrcode-reader'
+import { QrcodeStream, QrcodeCapture } from 'vue-qrcode-reader'
 // import { CheckCircleIcon } from '@heroicons/vue/24/solid';
 // import PaytacaLogo from './icons/paytaca_logo.png';
 const open = ref(false)
@@ -21,6 +21,7 @@ const openSuccess = function() {
 const onDetect = (code) => {
   detectedCodes.value.push(code);
   if (detectedCodes.value != ''){
+    console.log(detectedCodes)
     isLoading.value=true;
   }
   getList()

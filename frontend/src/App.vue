@@ -21,7 +21,7 @@
 </script>
 
 <template>
-  <main class="bg-teal-300 m-0 p-0">
+  <main class="m-0 p-0">
     
     <RouterView />
     <PayOffline ref="offline">
