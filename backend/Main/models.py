@@ -1,5 +1,9 @@
+from io import BytesIO
+import sys
+import PIL
 from django.db import models
 from PIL import Image
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 # Create your models here.
 
@@ -48,23 +52,30 @@ class ProductItem(models.Model):
     product_price = models.DecimalField(max_digits = 10, decimal_places=2)
     product_image = models.ImageField(upload_to='products')
 
+    def save(self, *args, **kwargs):
+        if self.product_image:
+            res_img = Image.open(self.product_image) #reinstantiate the product image for rescaling
+            max_width = 112
+            max_height = 160
+
+            # if res_img.mode == 'RGBA':
+            #     res_img = res_img.convert('RGB') #converts from an RGBA format image to RGB
+
+            # Calculate the scaling factor to fit within the maximum dimensions
+            width, height = res_img.size
+            if width > max_width or height > max_height:
+                res_img.thumbnail((max_width, max_height), PIL.Image.Resampling.LANCZOS)
+
+                # Save the resized image back to the same field
+                output = BytesIO()
+                res_img.save(output, format='PNG', quality=75) #maintains the quality of transparency
+                output.seek(0)
+                self.product_image = InMemoryUploadedFile(output, 'ImageField', "%s.png" % self.product_image.name.split('.')[0], 'image/png', sys.getsizeof(output), None)
+        
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.product_name
-    
-    # def save(self, *args, **kwargs):
-    #     super().save(*args, **kwargs)  # Call the original save method
-    
-    #     # Open the image using Pillow
-    #     img = Image.open(self.product_image.path)
-
-    #     # Define your desired dimensions (e.g., 400x300)
-    #     target_width, target_height = 400, 300
-
-    #     # Resize the image proportionally
-    #     img.thumbnail((target_width, target_height), Image.ANTIALIAS)
-
-    #     # Save the resized image back to the same path
-    #     img.save(self.product_image.path)
     
     class Meta:
         verbose_name_plural = 'Product Items'
