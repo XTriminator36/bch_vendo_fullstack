@@ -18,6 +18,10 @@ export default {
           '300': '#C7FF51'
         }
       },
+      margin: {
+          'sm1' : '.20rem',
+          'md6' : '1.7rem'
+      },
       height: {
         '100': '65rem',
       },
@@ -26,7 +30,8 @@ export default {
       },
       boxShadow: {
         '3xl': '10px -18px 0px 0px rgba(0,0,0,1)',
-        'rxl': '7px 4px 0px 1px rgb(249,67,67)',
+        'rxl': '6.5px 4px 0px 1px rgb(249,67,67)',
+        'bxl': '6px 4px 0px 1px rgba(0,0,0,1)',
       },
       fontFamily: {
         poppins: ["Poppins", "sans-serif"],

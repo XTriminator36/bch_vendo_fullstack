@@ -6,7 +6,7 @@ import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 import PaySuccess from "../components/PaySuccess.vue";
 import PayError from "../components/PayError.vue";
 import PaytacaLogo from './icons/paytaca_logo.png';
-
+import VQrcode, { ErrorCorrectLevel, RenderOptions } from 'qrcode-vuejs';
 
 const open = ref(false)
 const success = ref(null)

@@ -7,7 +7,7 @@ import {gsap} from 'gsap'
 import { onMounted } from 'vue'
 
 onMounted(async () => {
-    var tween = gsap.from(".thecontainer", { x: -100, duration: 1, ease: "elastic"})
+    var tween = gsap.from(".thecontainer", { opacity: 0, x: -100, duration: 1.3, ease: "elastic"})
     tween.play()
     // tween.reverse()
   });

@@ -1,32 +1,40 @@
 <script>
-import { ref, onMounted } from 'vue';
-import { inject } from 'vue'
+import { ref, onMounted, onBeforeMount } from 'vue';
+// import { inject } from 'vue'
 
 import no_stock from "../components/products/no-inventory.png";
 import ProductView from "../components/ProductView.vue";
 
 import axios from 'axios' //imports the axios api 
+import { gsap } from 'gsap'
 
 // const product = ref(null);
 export default {
     data(){
         return{
-            items:[], //initialize empty array first        
+            items:ref[''], //initialize empty array first
         }
     },
     created(){
         // Retrieves All Product with Api
         //Make a GET request to retrieve posts
-        axios.get('http://127.0.0.1:8080/api/ProductItems').
-            then(
-                response => {
-                    this.items = response.data;
-                    console.log(response.data);
-        }).catch(error => {
-            // display an error message if failed to fetch
-            console.error('Error fetching items (catch):', error);
-});
+        this.fetchData()
     },
+    methods: {
+        async fetchData() {
+            try {
+                const response = await axios.get('http://127.0.0.1:8080/api/ProductItems');
+                this.items = await response.data;
+                this.items.sort((a, b) => a.id - b.id);
+
+                console.log(this.items);
+                // console.log(response.data);
+            } catch (error) {
+                // display an error message if failed to fetch
+                console.error('Error fetching items:', error);
+            }
+        }
+    }
 }
 </script>
 <script setup>
@@ -34,11 +42,13 @@ export default {
     const modal = ref(null)
     const selectedItems = ref([]);
     const num = ref(1);
+    // const items= ref[''];
     const bchCurrent = ref(null);
 
-// Fetch BCH to PHP rate on component mount
-    onMounted(async () => {
+    // Fetch BCH to PHP rate on component mount
+    onBeforeMount(async () => {
         try {
+           
             const response = await fetch('https://min-api.cryptocompare.com/data/price?fsym=BCH&tsyms=PHP');
             const data = await response.json();
             bchCurrent.value = data['PHP'];
@@ -46,13 +56,26 @@ export default {
             console.error('Error fetching BCH to PHP rate:', error);
         }
     });
+    
+    onMounted(async () => {
+        var tl = gsap.timeline();
+        tl.from(".itemSection", { opacity: 0, x: -100, duration: 1.3, ease: "elastic"})
+            .from(".backButton", { opacity: 0, x: -100, duration: 1.3, ease: "elastic"}, "-=1.6")
+
+        // tween.play()
+        tl.delay(.8)
+        tl.play()
+
+        // tween.reverse()
+    });
     const openProd = (item) => {
         selectedItems.value = [item];
         modal.value.openProd();
+        console.log(item)
         //getList()
     }
     const addIncrement = function() {
-        const stock = selectedItems.value[0].stock;
+        const stock = selectedItems.value[0].product_quantity;
         if (num.value < stock) {
             num.value++
         }
@@ -71,95 +94,118 @@ export default {
     
 </script>
 
+
 <template>
-  <section class="container absolute max-w-4xl min-h-svh flex flex-col background">
-    <div class="my-auto">
-        <div class=" w-20 bg-[#53A0FB] h-16 flex justify-center items-center -mt-10 mb-6">
-            <RouterLink to="/option" >
-                <svg class="hover:scale-110 hover:ease-in hover:transition-transform" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                    <rect x="50" y="50" width="50" height="50" transform="rotate(-180 50 50)" fill="url(#pattern0)"/>
-                    <defs>
-                    <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
-                    <use xlink:href="#image0_104_895" transform="scale(0.01)"/>
-                    </pattern>
-                    <image id="image0_104_895" width="100" height="100" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+klEQVR4nO3cvWoUURiA4SUgBJtYRYiFRWy1j6UBMQG7pDOd92Cb0tZS7LwAvQFtYmehtVVCEvJnFVAslLxhyC4sMvnZnTnnfMO8T7nF7jm8zOzut7MzGEiSJEmSJEmSJEmSJEkaAp4Dh8ABsDF6XIVwEWLcO2DWIOWC1PkOPDBKnCCVU2DdKHGCVM6AN8Atw8QIMvIVuG+UOEEqP4GnRokTZHQKew3MGCZGkJHPwF2jxAlS2QMeGyVOkMpf4JVRWkQ7PgJ32lxXb9GeH8Cj0vvpPNr1B3hZek+dRhrvgdul99ZJpOOAMliQigPKYEHKDSiB1eGXJdX7AtzLGcQY1zsGlnMFUaQB5Q0Xo1wDyrEXUoQB5QSLUI4B5X8votIDyikWoJQDypon13R+AysGiWXHILFsGySOX8Azg8R5U3/om3oMH4C5VmL4KasRvxgGsgsstXZUeIQ08gmYH6TSbG298g/YzDF+9weq6x0BT5KGGAuyMjwnqt4WsJAlRpeRnv/CmkSGy4DWJlpQ35HON2Cx9P46hzS8lHRaLYfwYuumQg4G+4yIg8E+oxn/0hYoyG6ywWCfEXEw2GdEHAz2GTd34q014gTZcjCYCVdzMJgbl3MwWAL1HAwGugnmW2+CWf42sTvAPvCi5FokSZIkSZIkSZIkSZKkQVLnOXg9OT5CUCAAAAAASUVORK5CYII="/>
-                    </defs>
-                </svg>
-            </RouterLink>
-        </div>
-        <div class="itemSection grid grid-cols-4 gap-4 content-center justify-items-center mx-4">
-            <!-- <button >Click me</button> -->
-            <div v-for="item in items" :key="item.id">
-                <div 
-                    :class="[item.product_quantity === '0' ? 'bg-gradient-to-l  from-red-500 to-zinc-800 to-80% shadow-lg':'bg-white shadow-rxl', 'gridCon h-50 w-46 rounded hover:cursor-pointer hover:scale-105 hover:ease-in hover:transition-transform'] "
-                    @click="item.product_quantity > 0 && openProd(item)"
-                >
-                    <div class="h-48 bg-white rounded outline outline-black outline-3 flex items-center justify-center">
-                        <img :src="item.product_quantity !== '0' ? item.product_image : no_stock" :class="[item.product_quantity === '0' ? '':'' , 'w-28 h-fit']"/>
-                    </div>
-                    <div class="relative flex justify-between p-1">
-                        <div class="flex-none  ">
-                            <div class="absolute -top-[15px] left-[7px] w-16 py-1 bg-black rounded">
-                                <p class="font-dela text-white text-center text-xl">{{ item.product_code  }} </p>
-                            </div>
-                            <div :class="[item.product_quantity === '0' ? 'bg-neutral-800' : 'bg-lime-500', 'w-fit px-1 rounded-md mt-6 mb-1 ml-1']">
-                                <p class="font-mono tracking-tighter text-white text-sm">Stocks:{{ item.product_quantity }}</p>
-                            </div>   
-                        </div>
-                        <div class="text-right flex-none">
-                            <p :class="[item.product_quantity === '0' ? 'text-white line-through decoration-white':'text-red-500', 'font-space text-normal font-medium ']">₱ {{ item.product_price }}</p>
-                            <div :class="[item.product_quantity === '0' ? 'outline-white':'outline-lime-500', 'outline outline-2 rounded-md  pl-1']">
-                                <p :class="[item.product_quantity === '0' ? 'text-white line-through decoration-1':'text-lime-500', 'font-dela text-xs mt-1']">{{ (item.product_price / bchCurrent).toFixed(5) }}<span class="font-sans text-xxs mr-1"> BCH</span></p> 
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <Suspense>
+        
+        <template #fallback>
+            <section class="container absolute max-w-4xl min-h-svh flex flex-col background">
+                <div class="my-auto mx-auto">
+                <svg  class="w-28 h-28 text-black/25 animate-spin my-auto mx-auto" fill="none"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        fill="currentColor">
+                </path>
+                </svg>    
             </div>
-        </div>
-    </div>
-    <ProductView ref="modal" @close-emit="emitZero">
-        <div class="w-24 py-1 bg-black ">
-            <p class="font-dela text-white text-center text-3xl">{{ selectedItems[0].id }}</p>
-        </div>
-        <div class="grid grid-cols-2"> 
-            <div class="bg-lime-300 h-60 mt-3 flex flex-col">
-                <img :src="selectedItems[0].product_image !== '' ? selectedItems[0].product_image : ''" class="w-36 mx-auto my-auto h-fit"/>
-            </div>
+            </section>
             
-            <div class="h-60 mt-2">
-                <div class="grid grid-cols-1 content-center justify-items-center"> 
-                    <p class="font-dela text-black text-xl ">Quantity</p>
-                    <div class="grid grid-cols-3 gap-1 content-center items-center text-center mt-5">
-                        <div class="font-normal text-2xl hover:cursor-pointer border border-black rounded-md py-1 shadow-md" @click="subDecrement">
-                            -
+        </template>
+        <template #default>
+            <section class="container absolute max-w-4xl min-h-svh flex flex-col background">
+                <div class="backButton w-20 bg-[#53A0FB] h-16 flex justify-center items-center mt-10 mb-6">
+                        <RouterLink to="/option" >
+                            <svg class="hover:scale-110 hover:ease-in hover:transition-transform" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <rect x="50" y="50" width="50" height="50" transform="rotate(-180 50 50)" fill="url(#pattern0)"/>
+                                <defs>
+                                <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
+                                <use xlink:href="#image0_104_895" transform="scale(0.01)"/>
+                                </pattern>
+                                <image id="image0_104_895" width="100" height="100" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+klEQVR4nO3cvWoUURiA4SUgBJtYRYiFRWy1j6UBMQG7pDOd92Cb0tZS7LwAvQFtYmehtVVCEvJnFVAslLxhyC4sMvnZnTnnfMO8T7nF7jm8zOzut7MzGEiSJEmSJEmSJEmSJEkaAp4Dh8ABsDF6XIVwEWLcO2DWIOWC1PkOPDBKnCCVU2DdKHGCVM6AN8Atw8QIMvIVuG+UOEEqP4GnRokTZHQKew3MGCZGkJHPwF2jxAlS2QMeGyVOkMpf4JVRWkQ7PgJ32lxXb9GeH8Cj0vvpPNr1B3hZek+dRhrvgdul99ZJpOOAMliQigPKYEHKDSiB1eGXJdX7AtzLGcQY1zsGlnMFUaQB5Q0Xo1wDyrEXUoQB5QSLUI4B5X8votIDyikWoJQDypon13R+AysGiWXHILFsGySOX8Azg8R5U3/om3oMH4C5VmL4KasRvxgGsgsstXZUeIQ08gmYH6TSbG298g/YzDF+9weq6x0BT5KGGAuyMjwnqt4WsJAlRpeRnv/CmkSGy4DWJlpQ35HON2Cx9P46hzS8lHRaLYfwYuumQg4G+4yIg8E+oxn/0hYoyG6ywWCfEXEw2GdEHAz2GTd34q014gTZcjCYCVdzMJgbl3MwWAL1HAwGugnmW2+CWf42sTvAPvCi5FokSZIkSZIkSZIkSZKkQVLnOXg9OT5CUCAAAAAASUVORK5CYII="/>
+                                </defs>
+                            </svg>
+                        </RouterLink>
+                </div>
+                <div class="mb-auto">
+                    
+                    <div class="itemSection grid grid-cols-4 gap-4 content-center justify-items-center mx-4">
+                        <!-- <button >Click me</button> -->
+                        <div v-for="(item, index) in items" :key="item.id">
+                            <div 
+                                :class="[item.product_quantity == '0' ? 'bg-gradient-to-l  from-red-500 to-zinc-800 to-80% shadow-bxl ':'bg-white shadow-rxl hover:cursor-pointer hover:scale-105', 'gridCon h-50 w-46 rounded  hover:ease-in hover:transition-transform'] "
+                                @click="item.product_quantity > 0 && openProd(item)"
+                            >
+                                <div class="h-48 bg-white rounded outline outline-black outline-3 flex items-center justify-center">
+                                    <img :src="item.product_quantity !== '0' ? item.product_image : no_stock" :class="[item.product_quantity === '0' ? '':'' , 'w-28 h-fit']"/>
+                                </div>
+                                <div class="relative flex justify-between p-1">
+                                    <div class="flex-none">
+                                        <div class="absolute -top-[15px] left-[7px] w-16 py-1 bg-black rounded">
+                                            <p class="font-dela text-white text-center text-xl">{{ item.product_code  }} </p>
+                                        </div>
+                                        <div :class="[item.product_quantity == '0' ? 'bg-neutral-800' : 'bg-lime-500', 'w-fit px-1 rounded-md mt-md6 ml-1']">
+                                            <p class="font-mono tracking-tighter text-white text-sm">Stocks:{{ item.product_quantity }}</p>
+                                        </div>   
+                                    </div>
+                                    <div class="text-right flex-none">
+                                        <p :class="[item.product_quantity == '0' ? 'text-white line-through decoration-white':'text-red-500', 'font-space text-normal font-medium ']">₱ {{ item.product_price }}</p>
+                                        <div :class="[item.product_quantity == '0' ? 'outline-white':'outline-lime-500', 'outline outline-2 rounded-md  pl-1 mb-1']">
+                                            <p :class="[item.product_quantity == '0' ? 'text-white line-through decoration-1':'text-lime-500', 'font-dela text-xs mt-1']">{{ (item.product_price / bchCurrent).toFixed(5) }}<span class="font-sans text-xxs mr-1"> BCH</span></p> 
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="font-space text-2xl min-w-14 font-medium  rounded  border-b-2 border-black  p-2" >
-                            {{num}}
-                        </div>
-                        <div class="font-normal text-2xl hover:cursor-pointer border border-black rounded-md py-1 shadow-md" @click="addIncrement"> 
-                            +
-                        </div>
-                    </div>
-                    <p class="font-mono tracking-tighter text-black text-md mt-4 bg-lime-400 rounded-md place-self-end px-1 mr-3 ">Stocks:{{ selectedItems[0].product_quantity }}</p>
-                    <div class="justify-self-end  place-self-end text-right mr-3 mt-16">
-                        <p class="text-2xl font-space font-medium text-red-600">₱{{ (selectedItems[0].product_price * num).toFixed(2) }}</p>
-                        <div class="bg-lime-400 rounded-md border border-black border-l-transparent min-w-40 flex justify-between">
-                            <p class="font-dela text-2xl text-center pr-1 -ml-2 h-6 mb-1">
-                                =
-                            </p>
-                            <p class="font-dela text-2xl text-black text-right "> 
-                                {{ (selectedItems[0].product_price * num / bchCurrent).toFixed(5) }}
-                            </p>
-                        </div>
-                        <p class="">BCH</p>
-                        
                     </div>
                 </div>
-            </div>
-        </div>
-    </ProductView>
-    
-  </section>
+                <ProductView ref="modal" @close-emit="emitZero">
+                    <div class="w-24 py-1 bg-black ">
+                        <p class="font-dela text-white text-center text-3xl">{{ selectedItems[0].product_code }}</p>
+                    </div>
+                    <div class="grid grid-cols-2"> 
+                        <div class="bg-lime-300 h-60 mt-3 flex flex-col">
+                            <img :src="selectedItems[0].product_image !== '' ? selectedItems[0].product_image : ''" class="w-36 mx-auto my-auto h-fit"/>
+                        </div>
+                        
+                        <div class="h-60 mt-2">
+                            <div class="grid grid-cols-1 content-center justify-items-center"> 
+                                <p class="font-dela text-black text-xl ">Quantity</p>
+                                <div class="grid grid-cols-3 gap-1 content-center items-center text-center mt-5">
+                                    <div class="font-normal text-3xl hover:cursor-pointer border border-black rounded-md py-1 shadow-md align-top" @click="subDecrement">
+                                        -
+                                    </div>
+                                    <div class="font-space text-xl min-w-14 font-medium  rounded  border-b-2 border-black  p-2" >
+                                        {{num}}
+                                    </div>
+                                    <div class="font-normal text-3xl hover:cursor-pointer border border-black rounded-md py-1 shadow-md" @click="addIncrement"> 
+                                       <p class="align-middle">+</p> 
+                                    </div>
+                                </div>
+                                <p class="font-mono tracking-tighter text-black text-md mt-4 bg-lime-400 rounded-md place-self-end px-1 mr-3 ">Stocks:{{ selectedItems[0].product_quantity }}</p>
+                                <div class="justify-self-end  place-self-end text-right mr-3 mt-16">
+                                    <p class="text-2xl font-space font-medium text-red-600">₱{{ (selectedItems[0].product_price * num).toFixed(2) }}</p>
+                                    <div class="bg-lime-400 rounded-md border border-black border-l-transparent min-w-40 flex justify-between">
+                                        <p class="font-dela text-2xl text-center pr-1 -ml-2 h-6 mb-1">
+                                            =
+                                        </p>
+                                        <p class="font-dela text-2xl text-black text-right "> 
+                                            {{ (selectedItems[0].product_price * num / bchCurrent).toFixed(5) }}
+                                        </p>
+                                    </div>
+                                    <p class="">BCH</p>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ProductView>
+                
+            </section>
+        </template>
+    </Suspense>
 </template>
 
 
