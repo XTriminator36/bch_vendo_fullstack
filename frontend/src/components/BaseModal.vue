@@ -8,6 +8,7 @@ import PayError from "../components/PayError.vue";
 import PaytacaLogo from './icons/paytaca_logo.png';
 import VQrcode, { ErrorCorrectLevel, RenderOptions } from 'qrcode-vuejs';
 
+
 const open = ref(false)
 const success = ref(null)
 const fail = ref(null)
@@ -42,7 +43,7 @@ defineExpose({
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200" leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-              <DialogPanel class="relative transform overflow-hidden rounded-2xl bg-white/75 text-left shadow-xl transition-all min-h-96 sm:my-8 sm:w-full sm:max-w-md">
+              <DialogPanel class="relative transform overflow-hidden rounded-2xl bg-white/75 text-left shadow-xl transition-all min-h-96 sm:my-8 sm:w-full sm:max-w-lg">
                 <div class="bg-white min-h-96 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                   <div class="">
                     <!-- <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">

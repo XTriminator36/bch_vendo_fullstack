@@ -1,5 +1,5 @@
 <script>
-import { ref, onMounted, onBeforeMount } from 'vue';
+import { ref, onMounted, onBeforeMount, watch } from 'vue';
 // import { inject } from 'vue'
 
 import no_stock from "../components/products/no-inventory.png";
@@ -38,17 +38,15 @@ export default {
 }
 </script>
 <script setup>
-    // const bchCurrent = 27154.62 
     const modal = ref(null)
     const selectedItems = ref([]);
+    const newValue = ref([])
     const num = ref(1);
-    // const items= ref[''];
     const bchCurrent = ref(null);
 
     // Fetch BCH to PHP rate on component mount
     onBeforeMount(async () => {
         try {
-           
             const response = await fetch('https://min-api.cryptocompare.com/data/price?fsym=BCH&tsyms=PHP');
             const data = await response.json();
             bchCurrent.value = data['PHP'];
@@ -68,11 +66,18 @@ export default {
 
         // tween.reverse()
     });
+    
     const openProd = (item) => {
         selectedItems.value = [item];
+        // newValue.value = Object.values([item])
+        newValue.value = {'id': item.id, 'product_code': item.product_code, 'product_price': item.product_price}
+        // newValue.value * num.value / bchCurrent
+        newValue.value = {...newValue.value, drp_quantity: 1, bch_current:(newValue.value.product_price * num.value / bchCurrent.value)} //default
+        watch(() => num.value, (hello) => { 
+            newValue.value = {...newValue.value, drp_quantity: hello, bch_current:(newValue.value.product_price * num.value / bchCurrent.value)}
+        });
+        num.value = 1;
         modal.value.openProd();
-        console.log(item)
-        //getList()
     }
     const addIncrement = function() {
         const stock = selectedItems.value[0].product_quantity;
@@ -91,13 +96,11 @@ export default {
             // console.log(num.value);
         }, 300);
     }
-    
 </script>
 
 
 <template>
     <Suspense>
-        
         <template #fallback>
             <section class="container absolute max-w-4xl min-h-svh flex flex-col background">
                 <div class="my-auto mx-auto">
@@ -116,24 +119,25 @@ export default {
         </template>
         <template #default>
             <section class="container absolute max-w-4xl min-h-svh flex flex-col background">
-                <div class="backButton w-20 bg-[#53A0FB] h-16 flex justify-center items-center mt-10 mb-6">
-                        <RouterLink to="/option" >
-                            <svg class="hover:scale-110 hover:ease-in hover:transition-transform" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                                <rect x="50" y="50" width="50" height="50" transform="rotate(-180 50 50)" fill="url(#pattern0)"/>
-                                <defs>
-                                <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
-                                <use xlink:href="#image0_104_895" transform="scale(0.01)"/>
-                                </pattern>
-                                <image id="image0_104_895" width="100" height="100" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+klEQVR4nO3cvWoUURiA4SUgBJtYRYiFRWy1j6UBMQG7pDOd92Cb0tZS7LwAvQFtYmehtVVCEvJnFVAslLxhyC4sMvnZnTnnfMO8T7nF7jm8zOzut7MzGEiSJEmSJEmSJEmSJEkaAp4Dh8ABsDF6XIVwEWLcO2DWIOWC1PkOPDBKnCCVU2DdKHGCVM6AN8Atw8QIMvIVuG+UOEEqP4GnRokTZHQKew3MGCZGkJHPwF2jxAlS2QMeGyVOkMpf4JVRWkQ7PgJ32lxXb9GeH8Cj0vvpPNr1B3hZek+dRhrvgdul99ZJpOOAMliQigPKYEHKDSiB1eGXJdX7AtzLGcQY1zsGlnMFUaQB5Q0Xo1wDyrEXUoQB5QSLUI4B5X8votIDyikWoJQDypon13R+AysGiWXHILFsGySOX8Azg8R5U3/om3oMH4C5VmL4KasRvxgGsgsstXZUeIQ08gmYH6TSbG298g/YzDF+9weq6x0BT5KGGAuyMjwnqt4WsJAlRpeRnv/CmkSGy4DWJlpQ35HON2Cx9P46hzS8lHRaLYfwYuumQg4G+4yIg8E+oxn/0hYoyG6ywWCfEXEw2GdEHAz2GTd34q014gTZcjCYCVdzMJgbl3MwWAL1HAwGugnmW2+CWf42sTvAPvCi5FokSZIkSZIkSZIkSZKkQVLnOXg9OT5CUCAAAAAASUVORK5CYII="/>
-                                </defs>
-                            </svg>
-                        </RouterLink>
-                </div>
+                
+                <RouterLink to="/option" >
+                    <div class="backButton w-20 bg-[#53A0FB] h-16 flex justify-center items-center mt-10 mb-6">
+                        <svg class="hover:scale-110 hover:ease-in hover:transition-transform" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                            <rect x="50" y="50" width="50" height="50" transform="rotate(-180 50 50)" fill="url(#pattern0)"/>
+                            <defs>
+                            <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
+                            <use xlink:href="#image0_104_895" transform="scale(0.01)"/>
+                            </pattern>
+                            <image id="image0_104_895" width="100" height="100" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+klEQVR4nO3cvWoUURiA4SUgBJtYRYiFRWy1j6UBMQG7pDOd92Cb0tZS7LwAvQFtYmehtVVCEvJnFVAslLxhyC4sMvnZnTnnfMO8T7nF7jm8zOzut7MzGEiSJEmSJEmSJEmSJEkaAp4Dh8ABsDF6XIVwEWLcO2DWIOWC1PkOPDBKnCCVU2DdKHGCVM6AN8Atw8QIMvIVuG+UOEEqP4GnRokTZHQKew3MGCZGkJHPwF2jxAlS2QMeGyVOkMpf4JVRWkQ7PgJ32lxXb9GeH8Cj0vvpPNr1B3hZek+dRhrvgdul99ZJpOOAMliQigPKYEHKDSiB1eGXJdX7AtzLGcQY1zsGlnMFUaQB5Q0Xo1wDyrEXUoQB5QSLUI4B5X8votIDyikWoJQDypon13R+AysGiWXHILFsGySOX8Azg8R5U3/om3oMH4C5VmL4KasRvxgGsgsstXZUeIQ08gmYH6TSbG298g/YzDF+9weq6x0BT5KGGAuyMjwnqt4WsJAlRpeRnv/CmkSGy4DWJlpQ35HON2Cx9P46hzS8lHRaLYfwYuumQg4G+4yIg8E+oxn/0hYoyG6ywWCfEXEw2GdEHAz2GTd34q014gTZcjCYCVdzMJgbl3MwWAL1HAwGugnmW2+CWf42sTvAPvCi5FokSZIkSZIkSZIkSZKkQVLnOXg9OT5CUCAAAAAASUVORK5CYII="/>
+                            </defs>
+                        </svg>
+                    </div>
+                </RouterLink>
+                
                 <div class="mb-auto">
-                    
                     <div class="itemSection grid grid-cols-4 gap-4 content-center justify-items-center mx-4">
                         <!-- <button >Click me</button> -->
-                        <div v-for="(item, index) in items" :key="item.id">
+                        <div v-for="item in items" :key="item.id">
                             <div 
                                 :class="[item.product_quantity == '0' ? 'bg-gradient-to-l  from-red-500 to-zinc-800 to-80% shadow-bxl ':'bg-white shadow-rxl hover:cursor-pointer hover:scale-105', 'gridCon h-50 w-46 rounded  hover:ease-in hover:transition-transform'] "
                                 @click="item.product_quantity > 0 && openProd(item)"
@@ -161,7 +165,7 @@ export default {
                         </div>
                     </div>
                 </div>
-                <ProductView ref="modal" @close-emit="emitZero">
+                <ProductView ref="modal" @close-emit="emitZero" :array-purchase="newValue">
                     <div class="w-24 py-1 bg-black ">
                         <p class="font-dela text-white text-center text-3xl">{{ selectedItems[0].product_code }}</p>
                     </div>
@@ -202,13 +206,10 @@ export default {
                         </div>
                     </div>
                 </ProductView>
-                
             </section>
         </template>
     </Suspense>
 </template>
-
-
 
 <style scoped>
 .background{
