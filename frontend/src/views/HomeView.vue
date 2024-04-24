@@ -1,7 +1,7 @@
 <script setup> 
   import {RouterLink} from 'vue-router'
   import {gsap} from 'gsap'
-  import { onMounted } from 'vue'
+  import { onMounted, onBeforeUnmount } from 'vue'
   // import { TextPlugin } from "gsap/TextPlugin";
   import PaytacaLogo from '../components/icons/paytaca_logo.png';
   
@@ -16,10 +16,27 @@
     tl.play()
     // tween.reverse()
   });
-</script>
 
+</script>
+<script>
+import { gsap } from 'gsap';
+
+export default {
+  beforeRouteLeave(to, from, next) {
+    const time = gsap.timeline({
+      onComplete: () => {
+        next();
+      }
+    });
+    time.to(".lupad", { duration: .3, y:-10 , ease: "back.in" })
+      .to(".lupad", { duration: .3, opacity: 0, y:50 , ease: "back.in" })
+      .to(".logo", { duration: .3, opacity: 0, y:50,  ease: "back.in" })
+      // .to(".triangle", {rotation: -90, x: 100, y: 0, duration: 900, ease: "bounce"}, ">")
+  }
+}
+</script>
 <template>
-  <div class=" h-screen w-screen flex flex-col content-center justify-center">
+  <div class="homePage h-screen w-screen flex flex-col content-center justify-center">
     <div class="z-50 ">
       <RouterLink to="/option">
         <p class="lupad font-katibeh text-9xl text-center tracking-tight text-black ">Tap to Start</p>
@@ -36,7 +53,7 @@
       </svg>
     </div>
     <div class="absolute z-50 bottom-3 right-4">
-      <img :src="PaytacaLogo" class="h-10 w-auto" alt="" loading="lazy">
+      <img :src="PaytacaLogo" class="h-10 w-auto logo" alt="" loading="lazy">
 
     </div>
   </div>

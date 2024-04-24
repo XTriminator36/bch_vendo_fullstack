@@ -55,13 +55,13 @@ export default {
         }
     });
     
-    onMounted(async () => {
+    onMounted( () => {
         var tl = gsap.timeline();
         tl.from(".itemSection", { opacity: 0, x: -100, duration: 1.3, ease: "elastic"})
             .from(".backButton", { opacity: 0, x: -100, duration: 1.3, ease: "elastic"}, "-=1.6")
 
         // tween.play()
-        tl.delay(.8)
+        tl.delay(1)
         tl.play()
 
         // tween.reverse()
@@ -119,7 +119,9 @@ export default {
         </template>
         <template #default>
             <section class="container absolute max-w-4xl min-h-svh flex flex-col background">
-                
+                <div class="transit absolute h-dvh  z-50 top-0  bg-red-500">
+
+                </div>
                 <RouterLink to="/option" >
                     <div class="backButton w-20 bg-[#53A0FB] h-16 flex justify-center items-center mt-10 mb-6">
                         <svg class="hover:scale-110 hover:ease-in hover:transition-transform" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -157,7 +159,10 @@ export default {
                                     <div class="text-right flex-none">
                                         <p :class="[item.product_quantity == '0' ? 'text-white line-through decoration-white':'text-red-500', 'font-space text-normal font-medium ']">₱ {{ item.product_price }}</p>
                                         <div :class="[item.product_quantity == '0' ? 'outline-white':'outline-lime-500', 'outline outline-2 rounded-md  pl-1 mb-1']">
-                                            <p :class="[item.product_quantity == '0' ? 'text-white line-through decoration-1':'text-lime-500', 'font-dela text-xs mt-1']">{{ (item.product_price / bchCurrent).toFixed(5) }}<span class="font-sans text-xxs mr-1"> BCH</span></p> 
+                                            <p :class="[item.product_quantity == '0' ? 'text-white line-through decoration-1':'text-lime-500', 'font-dela text-xs mt-1']">
+                                                {{ (item.product_price / bchCurrent).toFixed(5) }}
+                                                <span class="font-sans text-xxs mr-1"> BCH</span>
+                                            </p> 
                                         </div>
                                     </div>
                                 </div>
@@ -207,6 +212,7 @@ export default {
                     </div>
                 </ProductView>
             </section>
+            
         </template>
     </Suspense>
 </template>
