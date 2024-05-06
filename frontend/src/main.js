@@ -1,6 +1,7 @@
 import './assets/style.css'
 
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import axios from 'axios'
@@ -10,7 +11,9 @@ import VQrcode, { ErrorCorrectLevel, RenderOptions } from 'qrcode-vuejs';
 
 
 const app = createApp(App)
+const pinia = createPinia()
 
+app.use(pinia)
 app.use(router)
 app.use(VueAxios, axios)
 app.provide('axios', app.config.globalProperties.axios)

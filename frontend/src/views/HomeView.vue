@@ -1,7 +1,7 @@
 <script setup> 
   import {RouterLink} from 'vue-router'
   import {gsap} from 'gsap'
-  import { onMounted, onBeforeUnmount } from 'vue'
+  import { onMounted } from 'vue'
   // import { TextPlugin } from "gsap/TextPlugin";
   import PaytacaLogo from '../components/icons/paytaca_logo.png';
   
@@ -19,8 +19,6 @@
 
 </script>
 <script>
-import { gsap } from 'gsap';
-
 export default {
   beforeRouteLeave(to, from, next) {
     const time = gsap.timeline({
@@ -36,7 +34,7 @@ export default {
 }
 </script>
 <template>
-  <div class="homePage h-screen w-screen flex flex-col content-center justify-center">
+  <div class="homePage h-screen flex flex-col content-center justify-center">
     <div class="z-50 ">
       <RouterLink to="/option">
         <p class="lupad font-katibeh text-9xl text-center tracking-tight text-black ">Tap to Start</p>
