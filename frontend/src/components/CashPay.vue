@@ -1,8 +1,7 @@
 <script setup>
-import { ref } from 'vue';
-import { inject } from 'vue'
+import { ref, watch } from 'vue';
+import  {useCounterStore}  from '../stores/counter'
 import { gsap } from 'gsap'
-
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import CameraScan from "./CameraScan.vue"
 
@@ -14,11 +13,15 @@ const num = ref()
 const error1 = ref(false)
 const tempNum = ref(0)
 const animatedDiv = ref(null)
+const counter = useCounterStore()
 
 const closeSuccess =  function() {
   open.value = false
   isLoading.value=false
   error1.value= false
+  setTimeout(() => {
+    num.value = '';
+  }, 500);  
   // clearDetectedCodes()
 }
 const openSuccess = function() {
@@ -27,9 +30,11 @@ const openSuccess = function() {
 
 
 const submitBtn = function() {
-  if (num.value % 20 == 0 || num.value % 50 == 0) {
+  if ((num.value % 20 == 0 || num.value % 50 == 0) && num.value != 0) {
     console.log((num.value % 20))
     console.log("divisible by 20")
+    counter.fetchData()
+    counter.$patch({submittedData: num.value}); // Store submitted data in Pinia store
     closeSuccess()
     openModal()
   } else {
@@ -42,15 +47,35 @@ const submitBtn = function() {
 
 const errorDisp = function() {
   var tl = gsap.timeline();
-
-    
-        tl.to(animatedDiv.value, { opacity: 1, duration: .2,  scale:1, y:-10, ease: "back.in" })
-        .to(animatedDiv.value, { duration: 1, opacity: 1, scale:1, y:0, ease: "elastic" })
-
-  // gsap.to(, { opacity: 1, duration: 0.5, y: -100, ease: "elastic" });
-
+        tl.to(animatedDiv.value, { opacity: 1, duration: .5,  scale:1, y:-10, ease: "back.out" })
+        .to(animatedDiv.value, { duration: .5, opacity: 1, scale:1, y:0, ease: "elastic" })
 }
-const axios = inject('axios'); // inject axios
+
+const isDivisibleBy20Or50 = (value) => {
+  return  (value != '' && value != 0) && (value % 20 === 0 || value % 50 === 0);
+};
+// Debounce function
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+};
+
+watch(num, debounce((newValue) => {
+  error1.value = !isDivisibleBy20Or50(newValue);
+  errorDisp()
+}, 800)); // Wait for 500 milliseconds after user stops typing
+
+// watch(num, debounce(() => {
+//   // error1.value = !isDivisibleBy20Or50(newValue);
+//   errorDisp()
+// }, 1500)); // Wait for 500 milliseconds after user stops typing
 
 const modal = ref(null)
 const openModal = () => {
@@ -65,20 +90,20 @@ defineExpose({
 <script>
 
 
-export default {
-  beforeRouteLeave(to, from, next) {
-    // const tl = gsap.timeline({
-    //   onComplete: () => {
-    //     next();
-    //   }
-    // });
-    // tl.to(".vendoMach", { duration: .2,  scale:1, y:-20, ease: "back.in" })
-    //     .to(".vendoMach", { duration: .4, opacity: 0, scale:1, y:300, ease: "back.in" })
-    //     .to(".cashIn", { duration: .2,  scale:1, y:-20, ease: "back.out" }, "-=0.2")
-    //     .to(".cashIn", { duration: .4, opacity: 0, y:200, scale:1,ease: "back.in" }, "-=0.2")
-    //     .to(".background1", { duration: .3, opacity: 0, ease: "back" }, "-=0.001")
-  }
-}
+// export default {
+//   beforeRouteLeave(to, from, next) {
+//     // const tl = gsap.timeline({
+//     //   onComplete: () => {
+//     //     next();
+//     //   }
+//     // });
+//     // tl.to(".vendoMach", { duration: .2,  scale:1, y:-20, ease: "back.in" })
+//     //     .to(".vendoMach", { duration: .4, opacity: 0, scale:1, y:300, ease: "back.in" })
+//     //     .to(".cashIn", { duration: .2,  scale:1, y:-20, ease: "back.out" }, "-=0.2")
+//     //     .to(".cashIn", { duration: .4, opacity: 0, y:200, scale:1,ease: "back.in" }, "-=0.2")
+//     //     .to(".background1", { duration: .3, opacity: 0, ease: "back" }, "-=0.001")
+//   }
+// }
 </script>
 
 <template>
@@ -103,23 +128,22 @@ export default {
                           Hello there!
                         </DialogTitle>
                         <!-- <p class="text-stone-950 font-space mt-7  text-2xl mb-1 leading-5 pl-2 ">Hello there!</p> -->
-                        <p class="text-stone-950 font-space  mb-2 text-lg leading-5 pl-2 font-light"> How much are we converting today?</p>
+                        <p class="text-stone-950 font-space  mb-2 text-lg leading-5 pl-2 font-light"> How much are we cashing-in today?</p>
                         <div v-if="isLoading==false" class="flex flex-col justify-center mt-20">
                             <!-- <p class="text-7xl font-space font-medium text-center p-2">₱</p> -->
                             <div class="block text-center">
                               <span class="font-space p-2 font-bold text-6xl">₱</span>
-                              <input type="number" class="font-dela text-5xl text-center min-w-60 max-w-72 font-normal rounded border-2 border-black " v-model="num" placeholder="---"/>
+                              <input type="number" class="font-dela text-5xl text-center min-w-60 max-w-72 font-normal rounded border-2 border-black " v-model="num"  placeholder="---"/>
                             </div>
                             <div class="mx-auto text-center mt-4 w-72 ">
-                              <small class="font-space ">Note: Input amount in bills, in 20s or in 50s. (ex: 20, 50, 120, 150...)</small>
+                              <p class="font-space font-thin ">Note: Input amount in bills, or in 20s or 50s. (ex: 20, 50, 120, 150...)</p>
                             </div>
-                            
-                            <div ref="animatedDiv" class="yey opacity-0 flex flex-col justify-center text-center mx-auto mt-10 transition-opacity duration-500 ease-in-out ">
-                              <div v-if="error1" class="font-mono text-pretty text-white text-center max-w-72 px-5 py-3 rounded bg-red-500 ring-red-700 ring-1">
-                                ₱{{ tempNum }} is invalid. Please input amount in bills, in 20s or in 50s.
+                            <div ref="animatedDiv" class="yey opacity-0 flex flex-col justify-center text-center mx-auto mt-6 transition-opacity duration-500 ease-in-out ">
+                              <div v-if="error1" class="font-space text-pretty text-white text-center max-w-96 px-5 py-3 rounded bg-red-500 ring-red-700 ring-1">
+                               <p>Your amount is invalid. Please input amount in bills, in 20s or in 50s.</p> 
                               </div>
-                              <div v-else class="font-mono text-pretty text-white text-center max-w-72 px-5 py-3 rounded bg-red-500 ring-red-700 ring-1">
-                                ₱{{ tempNum }} is your amount. Processing...
+                              <div v-else class="font-mono text-pretty text-black text-center max-w-72 px-5 py-3 rounded bg-lime-300 ring-lime-200 ring-1">
+                                Would you like to proceed?
                               </div>
                             </div>
                             
@@ -144,7 +168,7 @@ export default {
                 </div>
                 <div class="bg-gray-50 px-4 py-3 flex items-center justify-center sm:px-6 gap-5"> 
                   <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-5 py-3 text-sm font-dela font-normal text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto" @click="closeSuccess" ref="cancelButtonRef">Close</button>
-                  <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-lime-400 px-5 py-3 text-sm font-dela font-normal text-gray-900 shadow-sm transition-colors hover:bg-lime-300 hover:text-white sm:mt-0 sm:w-auto" @click="submitBtn" ref="submitButtonRef">Continue</button>
+                  <button type="button" :class="[error1 ? 'bg-gray-400 text-gray-600': ' bg-lime-400 text-gray-900 hover:bg-lime-300 hover:text-white ' , 'mt-3 inline-flex w-full justify-center rounded-md px-5 py-3 text-sm font-dela font-normal shadow-sm transition-colors sm:mt-0 sm:w-auto']" :disabled="error1" @click="submitBtn" ref="submitButtonRef">Continue</button>
                 </div>
               </DialogPanel>
             </TransitionChild>

@@ -11,9 +11,8 @@ import VQrcode, { ErrorCorrectLevel, RenderOptions } from 'qrcode-vuejs';
 
 
 const app = createApp(App)
-const pinia = createPinia()
+// const pinia = createPinia()
 
-app.use(pinia)
 app.use(router)
 app.use(VueAxios, axios)
 app.provide('axios', app.config.globalProperties.axios)
@@ -25,5 +24,7 @@ app.use(VQrcode, {
     render: RenderOptions.CANVAS,
 });
 // app.use(VueQrcodeReader)
-app.mount('#app')
+// app.use(pinia)
+app.use(createPinia())
 
+app.mount('#app')
