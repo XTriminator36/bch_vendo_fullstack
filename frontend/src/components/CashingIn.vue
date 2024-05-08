@@ -99,10 +99,10 @@ defineExpose({
                     </div> -->
                     <div class="mt-3 text-center sm:mt-0 sm:text-left min-h-96">
                         <DialogTitle as="h3" class="text-xl font-dela font-normal leading-6 bg-[#C7FF51] w-10/12 text-black p-3 text-left tracking-normal">
-                          Cashing in
+                          Insert your bill now
                         </DialogTitle>
                         <div class="mt-3">
-                          <p class="font-space ml-4">Insert your bill now...</p>
+                          <p class="font-space ml-4">Hey, ready as you are...</p>
                           <div class="flex justify-center">
                             <img ref="gif" class="w-56" :src="BitcoinGif" alt="Your GIF" />
                           </div>
@@ -113,6 +113,8 @@ defineExpose({
                 <div class="bg-gray-50 px-4 py-3 flex items-center justify-center sm:px-6"> 
                   <!-- <button type="button" class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto" @click="open = false">Deactivate</button>  -->
                   <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-5 py-3 text-sm font-dela font-normal text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto" @click="closeSuccess" ref="cancelButtonRef">Close</button>
+                  <button type="button" class="ml-3 mt-3 w-full justify-center rounded-md bg-[#53A0FB] px-5 py-3 text-md font-dela font-normal text-white shadow-sm  hover:bg-lime-300 hover:text-black sm:mt-0 sm:w-auto transition-colors" disabled  @click="openModal" >Done</button>
+
                 </div>
               </DialogPanel>
             </TransitionChild>

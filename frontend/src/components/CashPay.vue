@@ -30,7 +30,7 @@ const openSuccess = function() {
 
 
 const submitBtn = function() {
-  if ((num.value % 20 == 0 || num.value % 50 == 0) && num.value != 0) {
+  if (num.value != 0) {
     console.log((num.value % 20))
     console.log("divisible by 20")
     counter.fetchData()

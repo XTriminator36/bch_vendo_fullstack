@@ -6,10 +6,8 @@ import { QrcodeStream, QrcodeCapture } from 'vue-qrcode-reader'
 // import { CheckCircleIcon } from '@heroicons/vue/24/solid';
 // import PaytacaLogo from './icons/paytaca_logo.png';
 import { useCounterStore } from '../stores/counter';
-import { useRouter } from 'vue-router';
 import CashingIn from './CashingIn.vue'
 
-const router = useRouter();
 const counter = useCounterStore();
 
 const open = ref(false)
