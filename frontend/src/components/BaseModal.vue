@@ -4,12 +4,14 @@ import { ref } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 import PaySuccess from "../components/PaySuccess.vue";
+import CameraScan from "../components/CameraScan.vue";
 import PayError from "../components/PayError.vue";
 import PaytacaLogo from './icons/paytaca_logo.png';
-import VQrcode, { ErrorCorrectLevel, RenderOptions } from 'qrcode-vuejs';
+// import VQrcode, { ErrorCorrectLevel, RenderOptions } from 'qrcode-vuejs';
 
 
 const open = ref(false)
+const camera = ref(null)
 const success = ref(null)
 const fail = ref(null)
 const closeModal =  function() {
@@ -17,6 +19,10 @@ const closeModal =  function() {
 }
 const openModal = function() {
     open.value = true
+}
+const openCamera = () => {
+  camera.value.openSuccess()
+  closeModal()
 }
 const openSuccess = () => {
     success.value.openSuccess()
@@ -46,14 +52,7 @@ defineExpose({
               <DialogPanel class="relative transform overflow-hidden rounded-2xl bg-white/75 text-left shadow-xl transition-all min-h-96 sm:my-8 sm:w-full sm:max-w-lg">
                 <div class="bg-white min-h-96 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                   <div class="">
-                    <!-- <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                      <ExclamationTriangleIcon class="h-6 w-6 text-red-600" aria-hidden="true" />
-                    </div> -->
                     <div class="mt-3 text-center sm:mt-0 sm:text-left">
-                      <!-- <DialogTitle as="h3" class="text-xl font-dela font-normal leading-6 bg-cyan-300 text-white/95 w-52 py-2 text-center mx-auto tracking-tight">Scan to Pay</DialogTitle>
-                      <div class="w-full min-h-20 flex flex-col items-center justify-center">
-                        <p class="text-sm text-gray-500">-QR code here></p>                      
-                      </div> -->
                       <slot />
                     </div>
                   </div>
@@ -91,5 +90,8 @@ defineExpose({
           </div>
       </div>
     </PayError>
+    <CameraScan ref="camera">
+      
+    </CameraScan>
 </template>
   

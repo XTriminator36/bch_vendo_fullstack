@@ -20,6 +20,7 @@ export const useCounterStore = defineStore( 'counter', {
       loading: false,
       error: null,
       submittedData: null,
+      qrcodeObj: null,
     }),
     actions: {
       async fetchData() {

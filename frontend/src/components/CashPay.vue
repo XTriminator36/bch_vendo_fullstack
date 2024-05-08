@@ -10,7 +10,7 @@ import CameraScan from "./CameraScan.vue"
 const open = ref(false)
 const isLoading = ref(false)
 const num = ref()
-const error1 = ref(false)
+const error1 = ref(true)
 const tempNum = ref(0)
 const animatedDiv = ref(null)
 const counter = useCounterStore()
@@ -50,9 +50,30 @@ const errorDisp = function() {
         tl.to(animatedDiv.value, { opacity: 1, duration: .5,  scale:1, y:-10, ease: "back.out" })
         .to(animatedDiv.value, { duration: .5, opacity: 1, scale:1, y:0, ease: "elastic" })
 }
-
+const clearDisp = function() {
+  var tl = gsap.timeline();
+        tl.to(animatedDiv.value, { opacity: 0, duration: .0,  ease: "back.out" })
+}
 const isDivisibleBy20Or50 = (value) => {
-  return  (value != '' && value != 0) && (value % 20 === 0 || value % 50 === 0);
+  if (value <= 0) {
+    return false; // Invalid input
+  }
+  
+  const bills = [20, 50, 100];
+  
+  const checkCombination = (target, index) => {
+    if (target === 0) {
+      return true; // Combination found
+    }
+    if (target < 0 || index === bills.length) {
+      return false; // Combination not possible
+    }
+    // Include current bill or skip it
+    return checkCombination(target - bills[index], index) || checkCombination(target, index + 1);
+  };
+  
+  return checkCombination(value, 0);
+  // return (value !== '' && value !== 0) && (value % 20 === 0 || value % 50 === 0 || value % 70 === 0 || value % 90 === 0);
 };
 // Debounce function
 const debounce = (func, delay) => {
@@ -69,7 +90,11 @@ const debounce = (func, delay) => {
 
 watch(num, debounce((newValue) => {
   error1.value = !isDivisibleBy20Or50(newValue);
-  errorDisp()
+  if (num.value == ''){
+    clearDisp()
+  } else {
+    errorDisp()
+  }
 }, 800)); // Wait for 500 milliseconds after user stops typing
 
 // watch(num, debounce(() => {
@@ -142,11 +167,10 @@ defineExpose({
                               <div v-if="error1" class="font-space text-pretty text-white text-center max-w-96 px-5 py-3 rounded bg-red-500 ring-red-700 ring-1">
                                <p>Your amount is invalid. Please input amount in bills, in 20s or in 50s.</p> 
                               </div>
-                              <div v-else class="font-mono text-pretty text-black text-center max-w-72 px-5 py-3 rounded bg-lime-300 ring-lime-200 ring-1">
+                              <div v-else class="font-space text-pretty text-gray-900 text-center max-w-72 px-5 py-3 mt-6 rounded bg-lime-300 ring-lime-200 ring-1">
                                 Would you like to proceed?
                               </div>
                             </div>
-                            
                         </div>
                         <div v-else class="my-auto mx-auto">
                           <svg  class="w-28 h-28 text-black/25 animate-spin my-auto mx-auto" fill="none"
@@ -159,7 +183,6 @@ defineExpose({
                             </path>
                           </svg>    
                         </div>
-                        
                         <!-- <div v-for="(qrs, index) in detectedCodes" :key="index">
                             <p> {{ qrs }}</p>
                         </div> -->

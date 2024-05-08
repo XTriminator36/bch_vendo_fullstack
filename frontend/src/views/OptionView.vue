@@ -4,6 +4,8 @@ import { ref } from 'vue';
 // import BaseModal from "../components/BaseModal.vue";
 // import CameraScan from "../components/CameraScan.vue"
 import CameraScan from "../components/CashPay.vue"
+
+
 import {gsap} from 'gsap'
 import { onMounted } from 'vue'
 
@@ -81,9 +83,7 @@ export default {
 
 <template>
   <div class="container absolute h-dvh m-0 background1 max-w-4xl bg-stone-100">
-    <!-- <BackgroundDesignVu e class="h-100" /> -->
     <div class="wholeHolder flex flex-col h-dvh">
-
         <div class="thecontainer relative h-100 mx-6 my-auto rounded-3xl bg-teal-100/50 shadow-sm">
             <div class="headTag">
                 <div class=" w-full bg-[#151515] rounded-t-3xl absolute p-6 pb-9 ">
@@ -144,11 +144,7 @@ export default {
             </div>
         </div>
     </div>
-    <!-- <div class="transit absolute h-dvh  z-50 top-0  bg-blue-400">
-
-    </div> -->
   </div>
-
 </template>
 
 <style scoped>

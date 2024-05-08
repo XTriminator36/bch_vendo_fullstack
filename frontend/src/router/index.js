@@ -5,6 +5,7 @@ import StoreView from '../views/StoreView.vue'
 import ModalEx from '../components/BaseModal.vue'
 import SuccessModal from '../components/PaySuccess.vue'
 import CameraScan from '../components/ProductView.vue'
+import CashingIn from '../components/CashingIn.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +39,11 @@ const router = createRouter({
       path: '/camera',
       name: 'camera',
       component: CameraScan
+    },
+    {
+      path: '/cashingin',
+      name: 'cashingin',
+      component: CashingIn
     },
   ]
 })
