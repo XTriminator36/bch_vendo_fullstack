@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { inject } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 // import { QrcodeStream, QrcodeCapture } from 'vue-qrcode-reader'
@@ -12,26 +12,30 @@ const counter = useCounterStore();
 const open = ref(false)
 const detectedCodes = ref([])
 const isLoading = ref(false)
+let intervalId;
 
 const closeSuccess =  function() {
   open.value = false
   isLoading.value=false
   clearDetectedCodes()
+  clearInterval(intervalId);
 }
 const openSuccess = function() {
   open.value = true
+  startPolling(); // Start polling for updates
+
 }
-const onDetect = (code) => {
-  detectedCodes.value.push(code);
-  if (detectedCodes.value.length > 0){
-    // const rawValue = detectedCodes.value
-    // counter.qrcodeObj
-    counter.$patch({qrcodeObj: detectedCodes.value});
-    console.log(counter.qrcodeObj)
-    isLoading.value=true
-  }
-  getList()
-}
+// const onDetect = (code) => {
+//   detectedCodes.value.push(code);
+//   if (detectedCodes.value.length > 0){
+//     // const rawValue = detectedCodes.value
+//     // counter.qrcodeObj
+//     counter.$patch({qrcodeObj: detectedCodes.value});
+//     console.log(counter.qrcodeObj)
+//     isLoading.value=true
+//   }
+//   getList()
+// }
 const clearDetectedCodes = () => {
   detectedCodes.value = [];
 }
@@ -41,21 +45,18 @@ const getList = () => {
     .post('https://jsonplaceholder.typicode.com/posts', {
         detectedCodes
     })
-    // .then(response => {
-    //     console.log(response.data);
-    // });
-};
-
-//Get Confirmation that the cashing in has been successful
-const getConfirmation = () => {
-  axios
-    .post('https://jsonplaceholder.typicode.com/posts', {
-        detectedCodes
-    })
     .then(response => {
-      console.log(response.data);
+        console.log(response.data);
     });
 };
+const startPolling = () => {
+  intervalId = setInterval(() => {
+    getList();
+  }, 3000);
+};
+
+// getList(); // Fetch initial list
+
 const gif = ref(null);
 let replayCount = 0;
 
