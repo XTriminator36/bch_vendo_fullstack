@@ -33,6 +33,7 @@ const onDetect = (code) => {
   if (detectedCodes.value.length > 0){
     const rawValue = detectedCodes.value
     console.log(rawValue)
+    counter.$patch({qrcodeObj: rawValue});
     isLoading.value = true
     openModal()
     closeSuccess()
