@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import BaseModal from './BaseModal.vue';
+import axios from 'axios' //imports the axios api 
 import { VQrcode, RenderOptions, ErrorCorrectLevel } from 'qrcode-vuejs';
 // import { CheckCircleIcon } from '@heroicons/vue/24/solid';
 // import PaytacaLogo from './icons/paytaca_logo.png';
@@ -16,11 +17,28 @@ const props = defineProps({
 })
 const myArray = ref(null)
 var qrGenerated = ref([])
-const qrText = ref('')
+const qrText = ref(null)
 const newVal = ref(null)
 watch(() => props.arrayPurchase, (newValue) => {
       myArray.value = {...newValue} // Copy the props array to myArray
 });
+
+const fetchWalletAddress = async() => {
+    return new Promise((resolve, reject) => {
+        axios.get('http://127.0.0.1:8080/api/wallet-address')
+            .then( async response => {
+                console.log(response.data);
+                const cashAddress = response.data;
+                qrText.value = JSON.stringify(cashAddress[0].cash_address).replace(/"/g, '');
+                // resolve(response.data);
+            })
+            .catch(error => {
+                // Display an error message if failed to fetch
+                console.error('Error fetching items:', error);
+                reject(error);
+            });
+    });
+};
 
 watch(() => myArray.value, (newValue) => {
   // if (newValue.length > 0) {
@@ -28,7 +46,7 @@ watch(() => myArray.value, (newValue) => {
     newVal.value = newValue.product_code
     // qrGenerated.value.push(newValue[0]) 
     // qrGenerated.value.push(newValue[0]) // Accessing the id property of the first item in myArray
-    qrText.value = JSON.stringify(newValue)
+    // qrText.value = JSON.stringify(newValue)
     console.log(qrText)
   // }
 });
@@ -36,6 +54,7 @@ watch(() => myArray.value, (newValue) => {
 onMounted( () => {
   // const myArray = ref([])
   // myArray = props.arrayPurchase;
+  fetchWalletAddress()
 });
 // const qrGenerated = (myArray.id+myArray.product_code+myArray.product_quantity)
 
