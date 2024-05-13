@@ -23,13 +23,16 @@ watch(() => props.arrayPurchase, (newValue) => {
       myArray.value = {...newValue} // Copy the props array to myArray
 });
 
-const fetchWalletAddress = async() => {
+// fetches the wallet address and displays it in a form of qr code with the bch amount included
+const fetchQR = async() => {
     return new Promise((resolve, reject) => {
-        axios.get('http://127.0.0.1:8080/api/wallet-address')
+        axios.get('http://127.0.0.1:8080/api/wallet-address') //wallet address api
             .then( async response => {
                 console.log(response.data);
                 const cashAddress = response.data;
-                qrText.value = JSON.stringify(cashAddress[0].cash_address).replace(/"/g, '');
+                let qrTextValue = qrText.value = JSON.stringify(cashAddress[0].cash_address).replace(/"/g, '');
+
+                qrText.value = qrTextValue + "?amount=" + "0.00001"; //product price value should be passed here depending on the product chosen in the store.vue
                 // resolve(response.data);
             })
             .catch(error => {
@@ -54,7 +57,7 @@ watch(() => myArray.value, (newValue) => {
 onMounted( () => {
   // const myArray = ref([])
   // myArray = props.arrayPurchase;
-  fetchWalletAddress()
+  fetchQR()
 });
 // const qrGenerated = (myArray.id+myArray.product_code+myArray.product_quantity)
 
