@@ -3,6 +3,11 @@ from .models import *
 
 # Will handle all types of forms
 
+# class VendoRegForm(forms.ModelForm):
+#     class Meta:
+#         model = VendoRegistration
+#         fields = ('__all__')
+
 class ProductForm(forms.ModelForm):
     class Meta:
         model = ProductItem
@@ -15,8 +20,3 @@ class ProductForm(forms.ModelForm):
         if ProductItem.objects.filter(product_code=product_code).exists():
             raise forms.ValidationError("A product with this code already exist, please try your entry with a different product code.")
         return product_code
-    
-class VendoRegForm(forms.ModelForm):
-    class Meta:
-        model = VendoRegistration
-        fields = ('__all__')
