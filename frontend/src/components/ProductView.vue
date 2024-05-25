@@ -19,18 +19,35 @@ const myArray = ref(null)
 var qrGenerated = ref([])
 const qrText = ref(null)
 const newVal = ref(null)
-watch(() => props.arrayPurchase, (newValue) => {
-      myArray.value = {...newValue} // Copy the props array to myArray
-});
+const newSend = ref('')
+
 
 const fetchWalletAddress = async() => {
     return new Promise((resolve, reject) => {
         axios.get('http://127.0.0.1:8080/api/wallet-address')
-            .then( async response => {
-                console.log(response.data);
+            .then(async response => {
+              console.log(response.data);
                 const cashAddress = response.data;
-                qrText.value = JSON.stringify(cashAddress[0].cash_address).replace(/"/g, '');
+                newSend.value = (cashAddress[0].cash_address).replace(/"/g, '');
+                // qrText.value = JSON.stringify(newSend.value + '?amount=' + newValue.bch_current);
                 // resolve(response.data);
+                watch(() => props.arrayPurchase, (newValue) => {
+                    myArray.value = {...newValue} // Copy the props array to myArray
+                });
+                
+                watch(() => myArray.value, (newValue) => {
+                  // if (newValue.length > 0) {
+                    
+                    // newVal.value = newValue.product_code
+                    // qrGenerated.value.push(newValue[0]) 
+                    // qrGenerated.value.push(newValue[0]) // Accessing the id property of the first item in myArray
+                    // qrText.value = JSON.stringify(newValue)
+                    qrText.value = JSON.stringify(newSend.value + '?amount=' + newValue.bch_current);
+                    console.log(qrText)
+                  // }
+                });
+
+                
             })
             .catch(error => {
                 // Display an error message if failed to fetch
@@ -40,16 +57,6 @@ const fetchWalletAddress = async() => {
     });
 };
 
-watch(() => myArray.value, (newValue) => {
-  // if (newValue.length > 0) {
-    
-    newVal.value = newValue.product_code
-    // qrGenerated.value.push(newValue[0]) 
-    // qrGenerated.value.push(newValue[0]) // Accessing the id property of the first item in myArray
-    // qrText.value = JSON.stringify(newValue)
-    console.log(qrText)
-  // }
-});
 
 onMounted( () => {
   // const myArray = ref([])
