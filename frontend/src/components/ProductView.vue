@@ -19,28 +19,19 @@ const myArray = ref(null)
 var qrGenerated = ref([])
 const qrText = ref(null)
 const newVal = ref(null)
-const newSend = ref('')
+const qrTextValue = ref(null)
 
 
 // fetches the wallet address and displays it in a form of qr code with the bch amount included
 const fetchQR = async() => {
     return new Promise((resolve, reject) => {
-<<<<<<< HEAD
-        axios.get('http://127.0.0.1:8080/api/wallet-address')
-            .then(async response => {
-              console.log(response.data);
-                const cashAddress = response.data;
-                newSend.value = (cashAddress[0].cash_address).replace(/"/g, '');
-                // qrText.value = JSON.stringify(newSend.value + '?amount=' + newValue.bch_current);
-=======
         axios.get('http://127.0.0.1:8080/api/wallet-address') //wallet address api
             .then( async response => {
                 console.log(response.data);
                 const cashAddress = response.data;
-                let qrTextValue = qrText.value = JSON.stringify(cashAddress[0].cash_address).replace(/"/g, '');
+                qrTextValue.value = qrText.value = JSON.stringify(cashAddress[0].cash_address).replace(/"/g, '');
 
-                qrText.value = qrTextValue + "?amount=" + "0.00001"; //product price value should be passed here depending on the product chosen in the store.vue
->>>>>>> 73657937f0f87c7831535b651af0586baffe107d
+                // qrText.value = qrTextValue + "?amount=" + "0.00001"; //product price value should be passed here depending on the product chosen in the store.vue
                 // resolve(response.data);
                 watch(() => props.arrayPurchase, (newValue) => {
                     myArray.value = {...newValue} // Copy the props array to myArray
@@ -53,7 +44,7 @@ const fetchQR = async() => {
                     // qrGenerated.value.push(newValue[0]) 
                     // qrGenerated.value.push(newValue[0]) // Accessing the id property of the first item in myArray
                     // qrText.value = JSON.stringify(newValue)
-                    qrText.value = JSON.stringify(newSend.value + '?amount=' + newValue.bch_current);
+                    qrText.value = qrTextValue.value + '?amount=' + newValue.bch_current;
                     console.log(qrText)
                   // }
                 });
@@ -156,7 +147,7 @@ defineExpose({
               color-dark="#000000"
               color-light="#ffffff" 
               class="mt-10"
-              />"
+              />
           </div>
           <!-- </p> -->
           <svg v-else-if="isLoading==true" class="w-28 h-28 text-black/25 animate-spin my-auto" fill="none"
