@@ -1,11 +1,12 @@
 <script>
 import { ref, onMounted, onBeforeMount, watch } from 'vue';
 // import { inject } from 'vue'
-
+import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import no_stock from "../components/products/no-inventory.png";
 import ProductView from "../components/ProductView.vue";
-
+import BaseModal from '../components/BaseModal.vue';
 import axios from 'axios' //imports the axios api 
+import { VQrcode, RenderOptions, ErrorCorrectLevel } from 'qrcode-vuejs';
 import { gsap } from 'gsap'
 
 // const product = ref(null);
@@ -39,11 +40,55 @@ export default {
 </script>
 <script setup>
     const modal = ref(null)
-    const selectedItems = ref([]);
+    const open = ref(false)
+    const valVal = ref(null)
+    
+    const selectedItems = ref([])
     const newValue = ref([])
+    const bchValue = ref(null)
+    const scan = ref(null)
+    const isLoading = ref(false)
     const num = ref(1);
+    const qrTextValue = ref(null)
+    const qrText = ref(null)
+    const myArray = ref(null)
     const bchCurrent = ref(null);
+    // const emit = defineEmits(['closeEmit', 0], ['purchaseEmit', ])
 
+    const fetchQR = () => {
+        return new Promise((resolve, reject) => {
+            axios.get('http://127.0.0.1:8080/api/wallet-address') //wallet address api
+                .then(  response => {
+                    console.log(response.data);
+                    const cashAddress = response.data;
+                    qrTextValue.value = qrText.value = JSON.stringify(cashAddress[0].cash_address).replace(/"/g, '');
+
+                    // qrText.value = qrTextValue + "?amount=" + "0.00001"; //product price value should be passed here depending on the product chosen in the store.vue
+                    // resolve(response.data);
+
+                    // watch(() => newValue.value, (newVal) => {
+                    //     myArray.value = {...newVal} // Copy the props array to myArray
+                    // });
+                    
+                    watch(() => newValue.value, (newVal) => {
+                    // if (newValue.length > 0) {
+                        
+                        // newVal.value = newValue.product_code
+                        // qrGenerated.value.push(newValue[0]) 
+                        // qrGenerated.value.push(newValue[0]) // Accessing the id property of the first item in myArray
+                        // qrText.value = JSON.stringify(newValue)
+                        qrText.value = qrTextValue.value + '?amount=' + newVal.bch_current;
+                        console.log(qrText)
+                    // }
+                    });
+                })
+                .catch(error => {
+                    // Display an error message if failed to fetch
+                    console.error('Error fetching items:', error);
+                    reject(error);
+                });
+        });
+    };
     // Fetch BCH to PHP rate on component mount
     onBeforeMount(async () => {
         try {
@@ -63,24 +108,34 @@ export default {
         // tween.play()
         tl.delay(1)
         tl.play()
+        fetchQR()
 
         // tween.reverse()
     });
+    const openModal = () => {
+        scan.value.openModal()
+        modal.value.closeProd();
+        // emit('closeEmit')
+        // closeProd()
+    }
     
-    const openProd = (item) => {
+    const openProduct = (item) => {
         selectedItems.value = [item];
         // newValue.value = Object.values([item])
-        newValue.value = {'id': item.id, 'product_code': item.product_code, 'product_price': item.product_price}
+        newValue.value = {'id': item.id, 'product_code': item.product_code, 'product_price': item.product_price, 'product_quantity': item.product_quantity}
         // newValue.value * num.value / bchCurrent
-        newValue.value = {...newValue.value, drp_quantity: 1, bch_current:(newValue.value.product_price * num.value / bchCurrent.value)} //default
-        watch(() => num.value, (hello) => { 
-            newValue.value = {...newValue.value, drp_quantity: hello, bch_current:(newValue.value.product_price * num.value / bchCurrent.value)}
+        // bchValue.value = ((newValue.value.product_price * num.value / bchCurrent.value).toFixed(8))
+        newValue.value = {...newValue.value, drp_quantity: 1, bch_current:(newValue.value.product_price * num.value / bchCurrent.value).toFixed(8)} //default
+        watch(() => num.value, (drp) => { 
+            // bchValue.value = ()
+            // valVal.value = newValue.value.bch_current
+            newValue.value = {...newValue.value, drp_quantity: drp, bch_current:(newValue.value.product_price * drp / bchCurrent.value).toFixed(8)}
         });
         num.value = 1;
         modal.value.openProd();
     }
     const addIncrement = function() {
-        const stock = selectedItems.value[0].product_quantity;
+        const stock = newValue.value.product_quantity;
         if (num.value < stock) {
             num.value++
         }
@@ -122,9 +177,9 @@ export default {
                 <div class="transit absolute h-dvh  z-50 top-0  bg-red-500">
 
                 </div>
-                <RouterLink to="/option" >
-                    <div class="backButton w-20 bg-[#53A0FB] h-16 flex justify-center items-center mt-10 mb-6">
-                        <svg class="hover:scale-110 hover:ease-in hover:transition-transform" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <RouterLink to="/option" class="backButton w-20 bg-[#53A0FB] h-16 flex justify-center items-center mt-10 mb-6" >
+                    <div >
+                        <svg class="hover:scale-110 transition-transform ease-in-out hover:ease-in hover:transition-transform" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                             <rect x="50" y="50" width="50" height="50" transform="rotate(-180 50 50)" fill="url(#pattern0)"/>
                             <defs>
                             <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
@@ -141,8 +196,8 @@ export default {
                         <!-- <button >Click me</button> -->
                         <div v-for="item in items" :key="item.id">
                             <div 
-                                :class="[item.product_quantity == '0' ? 'bg-gradient-to-l  from-red-500 to-zinc-800 to-80% shadow-bxl ':'bg-white shadow-rxl hover:cursor-pointer hover:scale-105', 'gridCon h-50 w-46 rounded  hover:ease-in hover:transition-transform'] "
-                                @click="item.product_quantity > 0 && openProd(item)"
+                                :class="[item.product_quantity == '0' ? 'bg-gradient-to-l  from-red-500 to-zinc-800 to-80% shadow-bxl ':'bg-white shadow-rxl transition-transform ease-in-out hover:cursor-pointer hover:scale-105', 'gridCon h-50 w-46 rounded transition-transform ease-in-out hover:ease-in hover:transition-transform'] "
+                                @click="item.product_quantity > 0 && openProduct(item)"
                             >
                                 <div class="h-48 bg-white rounded outline outline-black outline-3 flex items-center justify-center">
                                     <img :src="item.product_quantity !== '0' ? item.product_image : no_stock" :class="[item.product_quantity === '0' ? '':'' , 'w-28 h-fit']"/>
@@ -170,47 +225,95 @@ export default {
                         </div>
                     </div>
                 </div>
-                <ProductView ref="modal" @close-emit="emitZero" :array-purchase="newValue">
-                    <div class="w-24 py-1 bg-black ">
-                        <p class="font-dela text-white text-center text-3xl">{{ selectedItems[0].product_code }}</p>
-                    </div>
-                    <div class="grid grid-cols-2"> 
-                        <div class="bg-lime-300 h-60 mt-3 flex flex-col">
-                            <img :src="selectedItems[0].product_image !== '' ? selectedItems[0].product_image : ''" class="w-36 mx-auto my-auto h-fit"/>
-                        </div>
-                        
-                        <div class="h-60 mt-2">
-                            <div class="grid grid-cols-1 content-center justify-items-center"> 
-                                <p class="font-dela text-black text-xl ">Quantity</p>
-                                <div class="grid grid-cols-3 gap-1 content-center items-center text-center mt-5">
-                                    <div class="font-normal text-3xl hover:cursor-pointer border border-black rounded-md py-1 shadow-md align-top" @click="subDecrement">
-                                        -
-                                    </div>
-                                    <div class="font-space text-xl min-w-14 font-medium  rounded  border-b-2 border-black  p-2" >
-                                        {{num}}
-                                    </div>
-                                    <div class="font-normal text-3xl hover:cursor-pointer border border-black rounded-md py-1 shadow-md" @click="addIncrement"> 
-                                       <p class="align-middle">+</p> 
-                                    </div>
+                <ProductView ref="modal" > <!--:array-purchase="newValue"-->
+                    <div class="bg-white min-h-96 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="">
+                            <!-- <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <ExclamationTriangleIcon class="h-6 w-6 text-red-600" aria-hidden="true" />
+                            </div> -->
+                            <div class="mt-3 text-center sm:mt-0 sm:text-left">
+                                
+                                <div class="w-24 py-1 bg-black ">
+                                    <p class="font-dela text-white text-center text-3xl">{{ selectedItems[0].product_code }}</p>
                                 </div>
-                                <p class="font-mono tracking-tighter text-black text-md mt-4 bg-lime-400 rounded-md place-self-end px-1 mr-3 ">Stocks:{{ selectedItems[0].product_quantity }}</p>
-                                <div class="justify-self-end  place-self-end text-right mr-3 mt-16">
-                                    <p class="text-2xl font-space font-medium text-red-600">₱{{ (selectedItems[0].product_price * num).toFixed(2) }}</p>
-                                    <div class="bg-lime-400 rounded-md border border-black border-l-transparent min-w-40 flex justify-between">
-                                        <p class="font-dela text-2xl text-center pr-1 -ml-2 h-6 mb-1">
-                                            =
-                                        </p>
-                                        <p class="font-dela text-2xl text-black text-right "> 
-                                            {{ (selectedItems[0].product_price * num / bchCurrent).toFixed(5) }}
-                                        </p>
+                                <div class="grid grid-cols-2"> 
+                                    <div class="bg-lime-300 h-60 mt-3 flex flex-col">
+                                        <img :src="selectedItems[0].product_image !== '' ? selectedItems[0].product_image : ''" class="w-36 mx-auto my-auto h-fit"/>
                                     </div>
-                                    <p class="">BCH</p>
                                     
+                                    <div class="h-60 mt-2">
+                                        <div class="grid grid-cols-1 content-center justify-items-center"> 
+                                            <p class="font-dela text-black text-xl ">Quantity</p>
+                                            <div class="grid grid-cols-3 gap-1 content-center items-center text-center mt-5">
+                                                <div class="font-normal text-3xl hover:cursor-pointer border border-black rounded-md py-1 shadow-md align-top" @click="subDecrement">
+                                                    -
+                                                </div>
+                                                <div class="font-space text-xl min-w-14 font-medium  rounded  border-b-2 border-black  p-2" >
+                                                    {{num}}
+                                                </div>
+                                                <div class="font-normal text-3xl hover:cursor-pointer border border-black rounded-md py-1 shadow-md" @click="addIncrement"> 
+                                                <p class="align-middle">+</p> 
+                                                </div>
+                                            </div>
+                                            <p class="font-mono tracking-tighter text-black text-md mt-4 bg-lime-400 rounded-md place-self-end px-1 mr-3 ">Stocks:{{ selectedItems[0].product_quantity }}</p>
+                                            <div class="justify-self-end  place-self-end text-right mr-3 mt-16">
+                                                <p class="text-2xl font-space font-medium text-red-600">₱{{ (selectedItems[0].product_price * num).toFixed(2) }}</p>
+                                                <div class="bg-lime-400 rounded-md border border-black border-l-transparent min-w-40 flex justify-between">
+                                                    <p class="font-dela text-2xl text-center pr-1 -ml-2 h-6 mb-1">
+                                                        =
+                                                    </p>
+                                                    <p class="font-dela text-2xl text-black text-right "> 
+                                                        {{ (selectedItems[0].product_price * num / bchCurrent).toFixed(5) }}
+                                                    </p>
+                                                </div>
+                                                <p class="">BCH</p>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div> 
+                    <div class="bg-gray-50 px-4 pb-3 content-center justify-items-center sm:px-6"> 
+                        <div class=" grid gird-rows-2 grid-flow-col"> 
+                            <button type="button" class="mt-3 w-full justify-center rounded-md bg-white px-5 py-3 text-md font-dela font-normal text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto" @click="closeProd" ref="cancelButtonRef">Cancel</button>
+                            <button type="button" class="ml-3 mt-3 w-full justify-center rounded-md bg-[#53A0FB] px-5 py-3 text-md font-dela font-normal text-white shadow-sm  hover:bg-lime-300 hover:text-black sm:mt-0 sm:w-auto transition-colors"  @click="openModal" >Purchase</button>
+                        </div>
                     </div>
                 </ProductView>
+                <BaseModal ref="scan">
+                    <h3 class="text-xl font-dela font-normal leading-6 bg-lime-300 text-black/95 w-52 py-2 text-center mx-auto tracking-tight">Scan to Pay</h3>
+                    <div class="w-full h-80 flex flex-col items-center justify-center">
+                        <!-- <p class="text-sm text-gray-500 my-auto"> 
+                            
+                            <VQrcode :text="'arrayPurchase[0].id'" />
+                        </p>    -->
+                        <!-- <p class="text-sm text-gray-500 my-auto"> -->
+                        {{ qrText }}
+                        <div v-if="isLoading==false">
+                            <v-qrcode
+                            :text="qrText"
+                            :size="200"
+                            :render="RenderOptions.CANVAS"
+                            :correct-level="ErrorCorrectLevel.M"
+                            color-dark="#000000"
+                            color-light="#ffffff" 
+                            class="mt-10"
+                            />
+                        </div>
+                        <!-- </p> -->
+                        <svg v-else-if="isLoading==true" class="w-28 h-28 text-black/25 animate-spin my-auto" fill="none"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                fill="currentColor">
+                            </path>
+                        </svg>     
+                    </div>
+                </BaseModal>
             </section>
             
         </template>
