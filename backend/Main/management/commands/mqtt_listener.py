@@ -3,6 +3,7 @@ import logging
 import paho.mqtt.client as mqtt
 import json
 import time
+from django.utils import timezone
 from django.core.management.base import BaseCommand
 from decouple import config
 import ssl
@@ -48,11 +49,19 @@ def on_message(client, userdata, msg):
         decimals = data["decimals"]
         amount = value / (10 ** decimals)
         
-        print(f"{tx_hash} | {amount:.7f} BCH")
+        print(f"{tx_hash} | {amount:.7f} BCH ")
 
         # Save BCH value and transaction hash to database
-        b = BchValue(bch_value=amount, tx_hash=tx_hash)
-        b.save()
+        # b = ProductTransactions(bch_value=amount, tx_hash=tx_hash)
+        # b.save()
+        recent_tx = ProductTransactions.objects.latest('id')
+        recent_tx.tx_hash = tx_hash
+        recent_tx.total_paid = amount
+        recent_tx.paid_timestamp = timezone.now()
+        recent_tx.is_paid = True
+        recent_tx.save()
+        print(f"Updated txid for product {recent_tx.product_code}: {tx_hash}")
+        
 
 FIRST_RECONNECT_DELAY = 1
 RECONNECT_RATE = 2

@@ -18,15 +18,15 @@ class BchSellTransactionAdmin(admin.ModelAdmin):
     )
 admin.site.register(BchSellTransaction, BchSellTransactionAdmin)
 
-#register the BCH value into admin site
-class BchValueAdmin(admin.ModelAdmin):
-    list_display = ('tx_hash', 'bch_value', 'completed', 'created_at', 'dispensed')
-admin.site.register(BchValue, BchValueAdmin)
-
 #registers cash address
 class CashAddressAdmin(admin.ModelAdmin):
     list_display = ('cash_address', 'created_at')
 admin.site.register(CashAddress, CashAddressAdmin)
+
+#registers the product transactions
+class ProductTransactionsAdmin(admin.ModelAdmin):
+    list_display = ('product_item', 'tx_hash', 'bch_value','created_at')
+admin.site.register(ProductTransactions, ProductTransactionsAdmin)
 
 admin.site.unregister(Group) #unregisters group
 

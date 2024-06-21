@@ -75,7 +75,7 @@ def check_watchtower_status():
             print("Watchtower status is up! ")
             return False
         else:
-            print("Watchtower status is not up. Current status:", status)
+            print("Watchtower status is down! Current status:", status)
             return True
     except (requests.RequestException, ValueError) as e:
         print("Failed to retrieve data from the API:", e)
@@ -86,7 +86,7 @@ def check_watchtower_status():
 def check_tx_hash(request):
     offline = check_watchtower_status()
     try:
-        tx_hash = BchValue.objects.last().tx_hash
+        tx_hash = ProductTransactions.objects.last().tx_hash
         cash_address = CashAddress.objects.last().cash_address
     except AttributeError:
         print("No data found in the database.")
@@ -110,27 +110,31 @@ def check_if_online(request):
     }
 
     return JsonResponse(data)
-
 # ----- WATCHTOWER side of things END ----- #
 
 # ----- BCH Products side START ----- #
-
 # Will create an output request out of chosen transaction
 class create_transaction(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         #gets the existing product item and its necessary details
-        product_item_id = request.data.get('id')
+        product_code = request.data.get('product_code')
+        product_quantity = request.data.get('product_quantity')
+        bch_value = request.data.get('bch_value')
 
-        if not product_item_id:
-            return Response({'error': 'Product item ID is required.'}, status=status.HTTP_400_BAD_REQUEST) #will return a response if Product ID is mismatched or no request input
-        
+        if not product_code:
+            return Response({'error': 'Product Code is required.'}, status=status.HTTP_400_BAD_REQUEST) #will return a response if Product ID is mismatched or no request input
+        elif not bch_value:
+            return Response({'error': 'A certain BCH value is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        elif not product_quantity:
+            return Response({'error': 'Certain Quantity is required'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            product_item = ProductItem.objects.all(id=product_item_id) #the requested product ID should equal to the existing product ID in the database
+            product_item = ProductItem.objects.get(product_code=product_code) #the requested product ID should equal to the existing product ID in the database
         except ProductItem.DoesNotExist:
-            return Response({'error' : 'No Existing Product ID'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error' : 'No Existing Product Code'}, status=status.HTTP_404_NOT_FOUND)
 
         #Creating the transaction
-        product_transaction = ProductTransactions(product_item=product_item)
+        product_transaction = ProductTransactions(product_item=product_item, product_code=product_code, bch_value=bch_value, product_quantity=product_quantity)
         product_transaction.save() #saves new product transaction
         
         serializer = ProductTransactionSerializer(product_transaction) #serialized the response
@@ -165,12 +169,12 @@ def update_quantity(request):
     if "txHash" in request.data:
         tx_hash = TxHashSerializer(data=request.data)
 
-    dispense_check = BchValue.objects.filter(tx_hash=tx_hash, dispensed=True) #set the dispense on being true
+    dispense_check = ProductTransactions.objects.filter(tx_hash=tx_hash, dispensed=True) #set the dispense on being true
     if dispense_check.count() == 0:
         print("Trigerring to dispense...")
         print("Product Code: ", product_code)
     
-    BchValue.objects.filter(tx_hash=tx_hash).update(dispensed=True)
+    ProductTransactions.objects.filter(tx_hash=tx_hash).update(dispensed=True)
 
     if product_code:
         print('Updating quantity...')

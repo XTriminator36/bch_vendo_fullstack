@@ -19,7 +19,7 @@ export default {
     created(){
         // Retrieves All Product with Api
         //Make a GET request to retrieve posts
-        this.fetchData()
+        this.fetchData();
     },
     methods: {
         async fetchData() {
@@ -42,6 +42,10 @@ export default {
     const modal = ref(null)
     const open = ref(false)
     const valVal = ref(null)
+
+    const productCodeValue = ref(null)
+    const quantityValue = ref(null)
+    const bchCurrentValue = ref(null)
     
     const selectedItems = ref([])
     const newValue = ref([])
@@ -89,6 +93,30 @@ export default {
                 });
         });
     };
+
+    const handlePurchase = async () => { 
+        productCodeValue.value = newValue.value.product_code;
+        quantityValue.value = parseInt(newValue.value.drp_quantity);
+        bchCurrentValue.value = parseFloat(newValue.value.bch_current);
+        const response = ref(null)
+
+        const payload = {
+            'product_code': productCodeValue.value,
+            'product_quantity': quantityValue.value,
+            'bch_value': bchCurrentValue.value
+        }
+
+        console.log(payload);
+
+        try {
+            const res = await axios.post('http://127.0.0.1:8080/api/create_transaction/', payload);
+            response.value = res.data;
+        } catch (error) {
+            console.error('Error:', error);
+            response.value = error.response ? error.response.data : error.message;
+        }
+
+    }
     // Fetch BCH to PHP rate on component mount
     onBeforeMount(async () => {
         try {
@@ -114,6 +142,7 @@ export default {
     });
     const openModal = () => {
         scan.value.openModal()
+        handlePurchase() //handle purchase
         modal.value.closeProd();
         // emit('closeEmit')
         // closeProd()
@@ -278,7 +307,7 @@ export default {
                     <div class="bg-gray-50 px-4 pb-3 content-center justify-items-center sm:px-6"> 
                         <div class=" grid gird-rows-2 grid-flow-col"> 
                             <button type="button" class="mt-3 w-full justify-center rounded-md bg-white px-5 py-3 text-md font-dela font-normal text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto" @click="closeProd" ref="cancelButtonRef">Cancel</button>
-                            <button type="button" class="ml-3 mt-3 w-full justify-center rounded-md bg-[#53A0FB] px-5 py-3 text-md font-dela font-normal text-white shadow-sm  hover:bg-lime-300 hover:text-black sm:mt-0 sm:w-auto transition-colors"  @click="openModal" >Purchase</button>
+                            <button type="submit" class="ml-3 mt-3 w-full justify-center rounded-md bg-[#53A0FB] px-5 py-3 text-md font-dela font-normal text-white shadow-sm  hover:bg-lime-300 hover:text-black sm:mt-0 sm:w-auto transition-colors"  @click="openModal" >Purchase</button>
                         </div>
                     </div>
                 </ProductView>

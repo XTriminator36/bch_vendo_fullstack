@@ -135,10 +135,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # <-- ALLOWED URLS FOR CORS (DRF DEPLOYMENT) -->
 
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_HEADERS = "access-control-allow-origin"
+CORS_ALLOW_HEADERS = "access-control-allow-origin" , "Content-Type"
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8080", #allowed url for getting the apis
-    "http://127.0.0.1:5173"
+    "http://127.0.0.1   :5173"
 ]
 
 

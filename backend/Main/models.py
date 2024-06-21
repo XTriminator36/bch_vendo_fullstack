@@ -40,15 +40,6 @@ class Alarm(models.Model):
     class Meta:
         verbose_name_plural = 'Alarm'
 
-class BchValue(models.Model):
-    bch_value = models.FloatField(default=0)
-    tx_hash = models.CharField(max_length = 64, null=True)
-    completed = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    dispensed = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.tx_hash
 
 # ----- Vendo's BCH recieving address for BCH Product Tranactions
 class CashAddress(models.Model):
@@ -122,15 +113,22 @@ class ProductItem(models.Model):
 
 # ----- BCH Products Transaction records -----
 class ProductTransactions(models.Model):
+    bch_value = models.FloatField(default=0, null=True)
+    tx_hash = models.CharField(max_length = 256, null=True)
     product_item = models.ForeignKey(ProductItem, on_delete=models.CASCADE)
-    tx_hash = models.CharField(max_length = 256, null=True) 
-    recipient = models.CharField(max_length = 64, null=True)
+    product_code = models.CharField(max_length = 3, null=True)
+    product_quantity = models.IntegerField(default=0, null=True)
+    item_hash =  models.CharField(max_length = 256, null=True)
+    total_paid = models.FloatField(default=0, null=True)
+    is_paid = models.BooleanField(default=False)
+    is_cancelled = models.BooleanField(null=True)
+    paid_timestamp = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     # --- Overriding the save function for hashing transactions ---
     def save(self, *args, **kwargs): 
-        if not self.transaction_hash:
-            self.transaction_hash = self.generate_hash()
+        if not self.item_hash:
+            self.item_hash = self.generate_hash()
         super().save(*args, **kwargs)
 
     #generates hash inputs based on the fields mentions from the ProductItems table
@@ -140,7 +138,7 @@ class ProductTransactions(models.Model):
     
     #returns a string for the hashed transaction and the product name
     def __str__(self):
-        return f'Transaction {self.transaction_hash} for {self.product_item.product_name}'
+        return f'Transaction {self.item_hash} for {self.product_item.product_name}'
     
     class Meta:
         verbose_name_plural = 'Product Transactions'

@@ -12,7 +12,7 @@ urlpatterns = [
     path('addProductItems/', views.addProductItems), # get all product items
     path('update_quantity/', views.update_quantity), # updating quantity
     path('wallet-address/', views.display_walletAddress.as_view()), # get bch wallet address
-    path('create_transaction', views.create_transaction.as_view()), # creates transaction || STILL ON THE WORKS
+    path('create_transaction/', views.create_transaction.as_view()), # creates transaction || STILL ON THE WORKS
     #path('',''),
 ]
 

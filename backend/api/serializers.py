@@ -19,18 +19,13 @@ class ProductCodeSerializer(serializers.ModelSerializer):
 class ProductTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductTransactions
-        fields = ['product_item', 'tx_hash', 'recipient', 'created_at']
-        read_only_fields = ['transaction_hash', 'created_at']
+        fields = ['tx_hash', 'bch_value', 'product_item', 'product_code', 'product_quantity', 'total_paid', 'is_paid', 'is_cancelled', 'paid_timestamp']
+        read_only_fields = ['item_hash', 'created_at']
 
 class TxHashSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BchValue
-        fields = ('tx_hash')
-
-class IfDispensedSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BchValue
-        fields = ('dispensed')
+        model = ProductTransactions
+        fields = 'tx_hash'
 
 class CashAddressSerializer(serializers.ModelSerializer):
     class Meta:
