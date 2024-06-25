@@ -25,7 +25,7 @@ class ProductTransactionSerializer(serializers.ModelSerializer):
 class TxHashSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductTransactions
-        fields = 'tx_hash'
+        fields = ['tx_hash']
 
 class CashAddressSerializer(serializers.ModelSerializer):
     class Meta:

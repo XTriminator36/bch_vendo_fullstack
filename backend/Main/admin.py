@@ -2,7 +2,9 @@ from django.contrib.auth.models import Group
 from django.contrib import admin
 from .models import *
 
-admin.site.register(ProductItem) #registers Product items
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('product_name', 'product_code', 'product_quantity', 'product_price')
+admin.site.register(ProductItem, ProductAdmin)
 
 #registers BCH transactions to admin site
 class BchSellTransactionAdmin(admin.ModelAdmin):
@@ -25,7 +27,7 @@ admin.site.register(CashAddress, CashAddressAdmin)
 
 #registers the product transactions
 class ProductTransactionsAdmin(admin.ModelAdmin):
-    list_display = ('product_item', 'tx_hash', 'bch_value','created_at')
+    list_display = ('product_item', 'tx_hash', 'bch_value', 'is_paid', 'is_cancelled','created_at')
 admin.site.register(ProductTransactions, ProductTransactionsAdmin)
 
 admin.site.unregister(Group) #unregisters group

@@ -115,6 +115,7 @@ class ProductItem(models.Model):
 class ProductTransactions(models.Model):
     bch_value = models.FloatField(default=0, null=True)
     tx_hash = models.CharField(max_length = 256, null=True)
+    recipient = models.CharField(max_length = 256, null=True)
     product_item = models.ForeignKey(ProductItem, on_delete=models.CASCADE)
     product_code = models.CharField(max_length = 3, null=True)
     product_quantity = models.IntegerField(default=0, null=True)

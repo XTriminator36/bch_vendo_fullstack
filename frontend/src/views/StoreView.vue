@@ -109,7 +109,7 @@ export default {
         console.log(payload);
 
         try {
-            const res = await axios.post('http://127.0.0.1:8080/api/create_transaction/', payload);
+            const res = await axios.post('http://127.0.0.1:8080/api/create_product_transaction/', payload);
             response.value = res.data;
         } catch (error) {
             console.error('Error:', error);

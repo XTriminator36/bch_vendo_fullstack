@@ -7,15 +7,19 @@ import PaySuccess from "../components/PaySuccess.vue";
 import CameraScan from "../components/CameraScan.vue";
 import PayError from "../components/PayError.vue";
 import PaytacaLogo from './icons/paytaca_logo.png';
+import axios from 'axios' //imports the axios api 
 // import VQrcode, { ErrorCorrectLevel, RenderOptions } from 'qrcode-vuejs';
 
 
 const open = ref(false)
 const camera = ref(null)
 const success = ref(null)
+const response = ref(null);
 const fail = ref(null)
+
 const closeModal =  function() {
     open.value = false
+    handleCancel()
 }
 const openModal = function() {
     open.value = true
@@ -28,6 +32,20 @@ const openSuccess = () => {
     success.value.openSuccess()
     closeModal()
 }
+
+const handleCancel = async () =>{
+  const payload = {
+    'is_cancelled': true
+  }
+  try {
+    const res = await axios.post('http://127.0.0.1:8080/api/cancel_product_transaction/', payload);
+    response.value = res.data;
+  } catch (error) {
+    console.error('Error:', error);
+    response.value = error.response ? error.response.data : error.message;
+  }
+};
+
 const openFail = () => {
     fail.value.openFail()
     closeModal()

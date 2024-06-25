@@ -20,18 +20,11 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    # index = CashAddress.objects.all().last().id
-    # address = CashAddress.objects.all().last().cash_address
 
     # Get wallet address from database
     # Used to compare from the MQTT listenertransactions 
-    address = CashAddress.objects.last().cash_address
 
-    # Get updated value of channel from database 
-    # Used for debug purposes
-    # channel = CashAddress.objects.all().last().channel
-    # channel = ProductItem.objects.all().last().product_code #prints product code as a channel
-    # print("Channel: ", channel)
+    address = CashAddress.objects.last().cash_address #gets the cash address from the database
 
     # Get updated amount from database
     # Used to save along with transaction hash
@@ -39,7 +32,8 @@ def on_message(client, userdata, msg):
 
     data = json.loads(msg.payload)
     print("Data: ", data)
-    print("Cash Address from data: ", data["recipient"])
+    print("Cash Address from data: ", 
+          )
     print("Cash Address from database: ", address)
 
     tx_hash = data["txid"]
@@ -51,16 +45,32 @@ def on_message(client, userdata, msg):
         
         print(f"{tx_hash} | {amount:.7f} BCH ")
 
-        # Save BCH value and transaction hash to database
-        # b = ProductTransactions(bch_value=amount, tx_hash=tx_hash)
-        # b.save()
-        recent_tx = ProductTransactions.objects.latest('id')
-        recent_tx.tx_hash = tx_hash
-        recent_tx.total_paid = amount
-        recent_tx.paid_timestamp = timezone.now()
-        recent_tx.is_paid = True
-        recent_tx.save()
-        print(f"Updated txid for product {recent_tx.product_code}: {tx_hash}")
+        recent_tx = ProductTransactions.objects.latest('id') #gets the recent transaction
+
+
+    #checks if the amount is exactly top be paid
+        if(amount == recent_tx.bch_value):
+
+        #Gets the product code of the recent transaction as the basis for the calculation for the updated quantity
+            recent_product_code = recent_tx.product_code
+            recent_product_quantity = recent_tx.product_quantity
+            get_product_stock = ProductItem.objects.get(product_code=recent_product_code)
+            get_stock_quantity = get_product_stock.product_quantity
+
+            calculate_new_quantity = get_stock_quantity - recent_product_quantity #calculation
+
+            ProductItem.objects.filter(product_code=recent_product_code).update(product_quantity = calculate_new_quantity) #updates the calculated quantity for the new product quantity
+
+        #Sets the other fields upon successful payment
+            recent_tx.tx_hash = tx_hash
+            recent_tx.total_paid = amount
+            recent_tx.recipient = address
+            recent_tx.paid_timestamp = timezone.now()
+            recent_tx.is_paid = True
+            recent_tx.is_cancelled = False
+            recent_tx.save()
+
+            print(f"Updated txid for product {recent_tx.product_code}: {tx_hash}")
         
 
 FIRST_RECONNECT_DELAY = 1
