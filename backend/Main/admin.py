@@ -27,7 +27,7 @@ admin.site.register(CashAddress, CashAddressAdmin)
 
 #registers the product transactions
 class ProductTransactionsAdmin(admin.ModelAdmin):
-    list_display = ('product_item', 'tx_hash', 'bch_value', 'is_paid', 'is_cancelled','created_at')
+    list_display = ('product_item', 'item_hash', 'tx_hash', 'bch_value', 'is_paid', 'is_cancelled','created_at')
 admin.site.register(ProductTransactions, ProductTransactionsAdmin)
 
 admin.site.unregister(Group) #unregisters group

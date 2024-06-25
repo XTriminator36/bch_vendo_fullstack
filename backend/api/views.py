@@ -144,13 +144,27 @@ class cancel_product_transaction(APIView):
     
 
 #Checks new/latest product transaction
-class check_new_txhash(APIView):
-    def post(self, request, *args, **kwargs):
+# class check_new_txhash(APIView):
+#     def post(self, request, *args, **kwargs):
 
-        latest_txhash = ProductTransactions.objects.latest('tx_hash')
-        serializer = TxHashSerializer(latest_txhash)
+#         latest_txhash = ProductTransactions.objects.latest('tx_hash')
+#         serializer = TxHashSerializer(latest_txhash)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+class get_latest_item_hash(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            latest_item_hash = ProductTransactions.objects.latest('created_at')
+
+            serializer = ProductItemHashSerializer(latest_item_hash)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except ProductTransactions.DoesNotExist:
+            return Response({"detail": "No transactions found"}, status=status.HTTP_404_NOT_FOUND)
+        
     
 class check_if_paid_product_hash(APIView):
     def post(self, request, *args, **kwargs):
@@ -167,30 +181,30 @@ class check_if_paid_product_hash(APIView):
 
 
 #updates the product quantity upon finish bch product transaction
-class update_quantity(APIView):
-    def post(self, request, *args, **kwargs):
+# class update_quantity(APIView):
+#     def post(self, request, *args, **kwargs):
 
-        get_current_txhash = request.data.get('txhash')
-        latest_txhash = ProductTransactions.objects.get(tx_hash=get_current_txhash)
-        latest_product_quantity = latest_txhash.product_quantity
+#         get_current_txhash = request.data.get('txhash')
+#         latest_txhash = ProductTransactions.objects.get(tx_hash=get_current_txhash)
+#         latest_product_quantity = latest_txhash.product_quantity
 
-        get_product_stock = ProductItem.objects.get(product_code=latest_txhash.product_code)
-        get_stock_quantity = get_product_stock.product_quantity
+#         get_product_stock = ProductItem.objects.get(product_code=latest_txhash.product_code)
+#         get_stock_quantity = get_product_stock.product_quantity
         
-        #compares txhashes first before updating product quantity
-        if get_current_txhash != ProductTransactions.objects.latest('tx_hash'):
+#         #compares txhashes first before updating product quantity
+#         if get_current_txhash != ProductTransactions.objects.latest('tx_hash'):
 
-        #calculate the current quantity and stock quantity
-            calc_product_quantity = get_stock_quantity - latest_product_quantity
+#         #calculate the current quantity and stock quantity
+#             calc_product_quantity = get_stock_quantity - latest_product_quantity
 
-        #sets a new quantity then updates it
-            set_new_quantity = ProductItem.objects.filter(product_code=latest_txhash.product_code).update(product_quantity=calc_product_quantity) 
+#         #sets a new quantity then updates it
+#             set_new_quantity = ProductItem.objects.filter(product_code=latest_txhash.product_code).update(product_quantity=calc_product_quantity) 
 
-            return Response(set_new_quantity, status=status.HTTP_200_OK)
+#             return Response(set_new_quantity, status=status.HTTP_200_OK)
         
-        else:
+#         else:
 
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
    
     
 # ----- BCH Products side END ----- #

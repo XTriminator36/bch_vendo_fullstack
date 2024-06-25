@@ -22,6 +22,11 @@ class ProductTransactionSerializer(serializers.ModelSerializer):
         fields = ['tx_hash', 'bch_value', 'product_item', 'product_code', 'product_quantity', 'total_paid', 'is_paid', 'is_cancelled', 'paid_timestamp']
         read_only_fields = ['item_hash', 'created_at']
 
+class ProductItemHashSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductTransactions
+        fields = ['item_hash']
+
 class TxHashSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductTransactions
