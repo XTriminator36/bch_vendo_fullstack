@@ -1,3 +1,4 @@
+from django.utils import timezone
 import time
 from psycopg2 import IntegrityError
 from rest_framework.response import Response
@@ -75,31 +76,11 @@ def check_watchtower_status():
             print("Watchtower status is up! ")
             return False
         else:
-            print("Watchtower status is not up. Current status:", status)
+            print("Watchtower status is down! Current status:", status)
             return True
     except (requests.RequestException, ValueError) as e:
         print("Failed to retrieve data from the API:", e)
         return True
-
-
-# # AJAX GET Reaquest API 
-def check_tx_hash(request):
-    offline = check_watchtower_status()
-    try:
-        tx_hash = BchValue.objects.last().tx_hash
-        cash_address = CashAddress.objects.last().cash_address
-    except AttributeError:
-        print("No data found in the database.")
-        tx_hash = ""
-        cash_address = ""
-
-    data = {
-        "hash": tx_hash,
-        "offline": offline,
-        "bchAddress": cash_address,
-    }
-
-    return JsonResponse(data)
 
 
 # AJAX GET Reaquest API 
@@ -110,90 +91,107 @@ def check_if_online(request):
     }
 
     return JsonResponse(data)
-
 # ----- WATCHTOWER side of things END ----- #
 
+
 # ----- BCH Products side START ----- #
-
 # Will create an output request out of chosen transaction
-class create_transaction(APIView):
-    def post(self, request):
+class create_product_transaction(APIView):
+    def post(self, request, *args, **kwargs):
         #gets the existing product item and its necessary details
-        product_item_id = request.data.get('id')
+        product_code = request.data.get('product_code')
+        product_quantity = request.data.get('product_quantity')
+        bch_value = request.data.get('bch_value')
 
-        if not product_item_id:
-            return Response({'error': 'Product item ID is required.'}, status=status.HTTP_400_BAD_REQUEST) #will return a response if Product ID is mismatched or no request input
-        
+        if not product_code:
+            return Response({'error': 'Product Code is required.'}, status=status.HTTP_400_BAD_REQUEST) #will return a response if Product ID is mismatched or no request input
+        elif not bch_value:
+            return Response({'error': 'A certain BCH value is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        elif not product_quantity:
+            return Response({'error': 'Certain Quantity is required'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            product_item = ProductItem.objects.all(id=product_item_id) #the requested product ID should equal to the existing product ID in the database
+            product_item = ProductItem.objects.get(product_code=product_code) #the requested product ID should equal to the existing product ID in the database
         except ProductItem.DoesNotExist:
-            return Response({'error' : 'No Existing Product ID'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error' : 'No Existing Product Code'}, status=status.HTTP_404_NOT_FOUND)
 
         #Creating the transaction
-        product_transaction = ProductTransactions(product_item=product_item)
+        product_transaction = ProductTransactions(product_item=product_item, product_code=product_code, bch_value=bch_value, product_quantity=product_quantity)
         product_transaction.save() #saves new product transaction
         
         serializer = ProductTransactionSerializer(product_transaction) #serialized the response
         return Response(serializer.data, status=status.HTTP_201_CREATED) #then returns a response
 
+#cancels the recent product transaction
+class cancel_product_transaction(APIView):
+    def post(self, request, *args, **kwargs):
+        cancel_transaction = request.data.get('is_cancelled')
 
-# Update channel via product code in database
-@api_view(['POST'])
-def update_channel(request):
-    channel = request.data.get('product_code')
-    print("Channel: ", channel)
-    c = ProductItem.objects.all().last()
-    c.product_code = channel
-
-    c.save()
-
-    data = {
-        "success": True
-    }
-
-    return JsonResponse(data) 
-
-#updates the product quantity upon finish bch transaction
-@api_view(['POST'])
-def update_quantity(request):
-
-    consume_quantity = request.data.get('num') #requests the data from the fixed quantity being consumed
-
-    #other input requests being serialized
-    if "product_code" in request.data:
-        product_code = ProductCodeSerializer(data=request.data)
-    if "txHash" in request.data:
-        tx_hash = TxHashSerializer(data=request.data)
-
-    dispense_check = BchValue.objects.filter(tx_hash=tx_hash, dispensed=True) #set the dispense on being true
-    if dispense_check.count() == 0:
-        print("Trigerring to dispense...")
-        print("Product Code: ", product_code)
+        if cancel_transaction == True:
+            cancelled = ProductTransactions.objects.latest('id')
+            cancelled.is_cancelled = True
+            cancelled.is_paid = False
+            cancelled.tx_hash = "---PAYMENT ABORTED---"
+            cancelled.recipient = "---NO RECIPIENT---"
+            cancelled.bch_value = 0.00000000
+            cancelled.total_paid = 0.00000000
+            cancelled.paid_timestamp = timezone.now()
+            cancelled.save()
+            
+            return Response(status=status.HTTP_200_OK)
+        
+        return Response(cancelled.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    BchValue.objects.filter(tx_hash=tx_hash).update(dispensed=True)
 
-    if product_code:
-        print('Updating quantity...')
-        print('Product Code:', product_code)
+#Checks new/latest product transaction
+class check_new_txhash(APIView):
+    def post(self, request, *args, **kwargs):
 
-        try:
-            product = ProductItem.objects.get(product_code=product_code)
+        latest_txhash = ProductTransactions.objects.latest('tx_hash')
+        serializer = TxHashSerializer(latest_txhash)
 
-            if product.quantity > 0:
-                product.quantity -= consume_quantity
-                product.save()
-                time.sleep(0.5)
-                return Response({
-                    'message': f'Quantity of product {product_code} reduced by {consume_quantity}'
-                    }, status=status.HTTP_200_OK)
-            else:
-                return Response({
-                    'error': 'Product quantity is already zero, therefore cannot dispense'
-                }, status=status.HTTP_400_BAD_REQUEST)
-        except ProductItem.DoesNotExist:
-            return Response({'error': f'Product with code {product_code} does not exist, try again!'}, status=status.HTTP_404_NOT_FOUND)   
-    else:
-        return JsonResponse({'success': False})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class check_if_paid_product_hash(APIView):
+    def post(self, request, *args, **kwargs):
+
+        product_item_hash = request.data.get('item_hash')
+
+        get_is_paid = ProductTransactions.objects.filter(item_hash=product_item_hash).get().is_paid
+
+        if get_is_paid == True:
+            return Response("Successfully Paid", status=status.HTTP_200_OK)
+
+        else:
+            return Response("Not yet paid", status=status.HTTP_400_BAD_REQUEST)
+
+
+#updates the product quantity upon finish bch product transaction
+class update_quantity(APIView):
+    def post(self, request, *args, **kwargs):
+
+        get_current_txhash = request.data.get('txhash')
+        latest_txhash = ProductTransactions.objects.get(tx_hash=get_current_txhash)
+        latest_product_quantity = latest_txhash.product_quantity
+
+        get_product_stock = ProductItem.objects.get(product_code=latest_txhash.product_code)
+        get_stock_quantity = get_product_stock.product_quantity
+        
+        #compares txhashes first before updating product quantity
+        if get_current_txhash != ProductTransactions.objects.latest('tx_hash'):
+
+        #calculate the current quantity and stock quantity
+            calc_product_quantity = get_stock_quantity - latest_product_quantity
+
+        #sets a new quantity then updates it
+            set_new_quantity = ProductItem.objects.filter(product_code=latest_txhash.product_code).update(product_quantity=calc_product_quantity) 
+
+            return Response(set_new_quantity, status=status.HTTP_200_OK)
+        
+        else:
+
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+   
     
 # ----- BCH Products side END ----- #
 
