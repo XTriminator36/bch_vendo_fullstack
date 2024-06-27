@@ -130,11 +130,10 @@ export default {
     const clearItemHash = () => {
         itemHash.value = null;
     }
-    const getLatestHash = () => {
+    const getLatestHash = async() => {
+        await
         axios
-            .get('http://127.0.0.1:8080/api/get_latest_item_hash/', {
-                itemHash
-            })
+            .get('http://127.0.0.1:8080/api/get_latest_item_hash')
             .then(response => {
                 if (response.status === 200) {
                     startPolling()
@@ -153,19 +152,20 @@ export default {
             });
     }
     //GET IF PAYMENT IS CHECKED
-    const getHash = () => {
-        axios
+    const getHash = async() => {
+        await axios
             .post('http://127.0.0.1:8080/api/check_if_paid_product_hash/',
                 itemHash.value
             )
             .then(response => {
-                if (response.data === "Successfully Paid") {
+                console.log(response.data)
+                if (response.data == "Successfully Paid") {
                     // console.log(response.data);
                     stopPolling()
                     openSuccess()
                 } else {
                     console.error(`Error: Received status code ${response.status}`);
-                    console.log(itemHash)
+                    // console.log(itemHash)
                 }
             })
             .catch(error => {
