@@ -19,6 +19,7 @@ const fail = ref(null)
 
 const closeModal =  function() {
     open.value = false
+    emit('closeEmit')
     handleCancel()
 }
 const openModal = function() {
@@ -40,11 +41,14 @@ const handleCancel = async () =>{
   try {
     const res = await axios.post('http://127.0.0.1:8080/api/cancel_product_transaction/', payload);
     response.value = res.data;
+    console.log("is_cancelled_____")
   } catch (error) {
     console.error('Error:', error);
     response.value = error.response ? error.response.data : error.message;
   }
 };
+
+const emit = defineEmits(['closeEmit'])
 
 const openFail = () => {
     fail.value.openFail()
@@ -52,7 +56,9 @@ const openFail = () => {
 }
 defineExpose({
   openModal,
-  closeModal
+  closeModal,
+  openSuccess,
+  openFail
 })
 </script>
 

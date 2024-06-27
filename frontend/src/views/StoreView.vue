@@ -127,8 +127,8 @@ export default {
 
 
     let intervalId;
-    const clearDetectedCodes = () => {
-        detectedCodes.value = [];
+    const clearItemHash = () => {
+        itemHash.value = null;
     }
     const getLatestHash = () => {
         axios
@@ -139,8 +139,8 @@ export default {
                 if (response.status === 200) {
                     startPolling()
                     itemHash.value = response.data
-                                                                    //.replace(/{/g, '')  // Remove opening curly brace
-                                                                    //.replace(/}/g, ''); // Remove closing curly brace  
+                        //.replace(/{/g, '')  // Remove opening curly brace
+                        //.replace(/}/g, ''); // Remove closing curly brace  
                     console.log("start polling here..." , itemHash.value)
                     // itemHash.value = JSON.stringify(response.data).replace(/"/g, '');
                 } else {
@@ -159,7 +159,7 @@ export default {
                 itemHash.value
             )
             .then(response => {
-                if (response.status === 200) {
+                if (response.data === "Successfully Paid") {
                     // console.log(response.data);
                     stopPolling()
                     openSuccess()
@@ -184,10 +184,11 @@ export default {
     const stopPolling = () => {
         if (intervalId) {
             clearInterval(intervalId);
+            // clearItemHash()
             intervalId = null;  // Optional: reset the intervalId to null
         }
     };
-
+    
     // Fetch BCH to PHP rate on component mount
     onBeforeMount(async () => {
         try {
@@ -228,7 +229,7 @@ export default {
     //OPEN Successful Payment
     const openSuccess = function() {
         scan.value.openSuccess()
-        clearDetectedCodes()
+        // clearItemHash()
 
     }
     const openFail = function(){
@@ -397,7 +398,7 @@ export default {
                         </div>
                     </div>
                 </ProductView>
-                <BaseModal ref="scan">
+                <BaseModal ref="scan" @close-emit="stopPolling">
                     <h3 class="text-xl font-dela font-normal leading-6 bg-lime-300 text-black/95 w-52 py-2 text-center mx-auto tracking-tight">Scan to Pay</h3>
                     <div class="w-full h-80 flex flex-col items-center justify-center">
                         <!-- <p class="text-sm text-gray-500 my-auto"> 
@@ -405,7 +406,7 @@ export default {
                             <VQrcode :text="'arrayPurchase[0].id'" />
                         </p>    -->
                         <!-- <p class="text-sm text-gray-500 my-auto"> -->
-                        {{ qrText }}
+                        {{ itemHash }}
                         <div v-if="isLoading==false">
                             <v-qrcode
                             :text="qrText"
