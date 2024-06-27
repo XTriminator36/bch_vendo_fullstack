@@ -111,17 +111,88 @@ export default {
         try {
             const res = await axios.post('http://127.0.0.1:8080/api/create_product_transaction/', payload);
             response.value = res.data;
+            console.log('this response ...',response.value)
         } catch (error) {
             console.error('Error:', error);
             response.value = error.response ? error.response.data : error.message;
         }
 
     }
+    
+
+    //Fetch item_hash if purchase is COMPLETE
+    const detectedCodes = ref([])
+    const itemHash = ref(null)
+    
+
+
+    let intervalId;
+    const clearDetectedCodes = () => {
+        detectedCodes.value = [];
+    }
+    const getLatestHash = () => {
+        axios
+            .get('http://127.0.0.1:8080/api/get_latest_item_hash/', {
+                itemHash
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    startPolling()
+                    itemHash.value = response.data
+                                                                    //.replace(/{/g, '')  // Remove opening curly brace
+                                                                    //.replace(/}/g, ''); // Remove closing curly brace  
+                    console.log("start polling here..." , itemHash.value)
+                    // itemHash.value = JSON.stringify(response.data).replace(/"/g, '');
+                } else {
+                    console.error(`Error: Received status code ${response.status}`);
+
+                }
+            })
+            .catch(error => {
+                console.error('Error during the request', error);
+            });
+    }
+    //GET IF PAYMENT IS CHECKED
+    const getHash = () => {
+        axios
+            .post('http://127.0.0.1:8080/api/check_if_paid_product_hash/',
+                itemHash.value
+            )
+            .then(response => {
+                if (response.status === 200) {
+                    // console.log(response.data);
+                    stopPolling()
+                    openSuccess()
+                } else {
+                    console.error(`Error: Received status code ${response.status}`);
+                    console.log(itemHash)
+                }
+            })
+            .catch(error => {
+                console.error('Error during the request in getHash()', error);
+                // console.log(itemHash)
+                stopPolling()
+            });
+    };      
+
+    const startPolling = () => {
+        intervalId = setInterval(() => {
+            console.log(itemHash)
+            getHash();
+        }, 3000);
+    };
+    const stopPolling = () => {
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;  // Optional: reset the intervalId to null
+        }
+    };
+
     // Fetch BCH to PHP rate on component mount
     onBeforeMount(async () => {
         try {
-            const response = await fetch('https://min-api.cryptocompare.com/data/price?fsym=BCH&tsyms=PHP');
-            const data = await response.json();
+            const bch_res = await fetch('https://min-api.cryptocompare.com/data/price?fsym=BCH&tsyms=PHP');
+            const data = await bch_res.json();
             bchCurrent.value = data['PHP'];
         } catch (error) {
             console.error('Error fetching BCH to PHP rate:', error);
@@ -140,14 +211,29 @@ export default {
 
         // tween.reverse()
     });
+    //OPEN QR SCAN
     const openModal = () => {
         scan.value.openModal()
         handlePurchase() //handle purchase
-        modal.value.closeProd();
+        modal.value.closeProd()
+        getLatestHash()
         // emit('closeEmit')
         // closeProd()
     }
-    
+    //CLOSE ProductView.vue modal
+    const closeProd =  function() {
+        modal.value.closeProd();
+        // emit('closeEmit')
+    }
+    //OPEN Successful Payment
+    const openSuccess = function() {
+        scan.value.openSuccess()
+        clearDetectedCodes()
+
+    }
+    const openFail = function(){
+        scan.value.openFail()
+    }
     const openProduct = (item) => {
         selectedItems.value = [item];
         // newValue.value = Object.values([item])
