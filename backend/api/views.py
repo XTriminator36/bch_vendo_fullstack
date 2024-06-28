@@ -177,7 +177,11 @@ class check_if_paid_product_hash(APIView):
             return Response("Successfully Paid", status=status.HTTP_200_OK)
 
         else:
+<<<<<<< HEAD
             return Response("Not yet paid")
+=======
+            return Response("Not yet paid", status=status.HTTP_200_OK)
+>>>>>>> cda83e4acc01fdfe7aa00e868271194478c019b4
 
 
 #updates the product quantity upon finish bch product transaction
