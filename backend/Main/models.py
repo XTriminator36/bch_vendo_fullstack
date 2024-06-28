@@ -7,6 +7,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
 import requests
 import hashlib
+import uuid
 
 # Create your models here.
 
@@ -134,7 +135,8 @@ class ProductTransactions(models.Model):
 
     #generates hash inputs based on the fields mentions from the ProductItems table
     def generate_hash(self):
-        hash_input = f'{self.product_item.product_name}{self.product_item.product_price}{self.product_item.product_quantity}{self.product_item.product_code}'
+        #hash_input = f'{self.product_item.product_name}{self.product_item.product_price}{self.product_item.product_quantity}{self.product_item.product_code}'
+        hash_input = uuid.uuid4().hex #revised the item_hashing
         return hashlib.sha256(hash_input.encode()).hexdigest()
     
     #returns a string for the hashed transaction and the product name

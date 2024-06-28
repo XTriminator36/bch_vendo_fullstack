@@ -32,8 +32,7 @@ def on_message(client, userdata, msg):
 
     data = json.loads(msg.payload)
     print("Data: ", data)
-    print("Cash Address from data: ", 
-          )
+    print("Cash Address from data: ", data["recipient"] )
     print("Cash Address from database: ", address)
 
     tx_hash = data["txid"]
